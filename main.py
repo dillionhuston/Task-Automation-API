@@ -1,4 +1,4 @@
-from models.models import SessionLocal, engine, Base
+from models.database import SessionLocal, engine, Base
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
