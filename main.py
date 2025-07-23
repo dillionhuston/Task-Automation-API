@@ -1,20 +1,11 @@
-from models.database import SessionLocal, engine, Base
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
+from fastapi import FastAPI
+from app.models.database import SessionLocal, engine, Base
+from app.auth.routes import router as auth_router
 
 app = FastAPI()
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 Base.metadata.create_all(bind=engine)
-
-def Get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 
 @app.get("/health")
 def get_health():
-    return {"sucess": 200}
+    return {"success": 200}
