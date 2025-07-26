@@ -2,7 +2,7 @@
 # Task Automation API Platform
 
 ## Overview
-The Task Automation API Platform is a backend-only FastAPI application that enables users to upload files, schedule automated tasks (e.g., reminders, cleanup jobs), and receive email notifications. It features secure JWT-based authentication, admin tools, and containerized deployment with Docker. This project showcases skills in building scalable, secure APIs with modern Python technologies.
+The Task Automation API Platform is a backend-only FastAPI application that enables users to upload files, schedule automated tasks (e.g., reminders, cleanup jobs), and receive email notifications. It features secure JWT-based authentication, admin tools, and containerized deployment with Docker. This project showcases my skills in building  secure APIs with modern Python technologies.
 
 ## Features
 - User Authentication: Secure registration and login with JWT.
