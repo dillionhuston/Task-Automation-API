@@ -1,4 +1,4 @@
-from dependencies import OAuth2PasswordBearer,Depends, jwt, Session, HTTPException, get_db, status, SECRET_KEY, UserModel
+from app.dependencies import OAuth2PasswordBearer,Depends, jwt, Session, HTTPException, get_db, status, SECRET_KEY, UserModel
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 

@@ -1,5 +1,5 @@
 """Contains user auth and jwt generation"""
-from .auth import verify_password, verify_token, jwt_generate, jwt, os, pbkdf2_sha256, load_dotenv
+from app.auth import jwt, os, pbkdf2_sha256, load_dotenv
 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")

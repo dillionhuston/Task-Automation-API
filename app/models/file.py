@@ -1,4 +1,4 @@
-from models import Base, Column, String, Integer
+from models import Base, Column, String, Integer, relationship, UserModel
 class FileModel(Base):
     __tablename__ = "Files"
 
@@ -7,3 +7,4 @@ class FileModel(Base):
     upload_date = Column(String)
     user_id = Column(Integer)
     filename = Column(String, unique=True, index=True)
+    user = relationship(UserModel, back_populates="files")

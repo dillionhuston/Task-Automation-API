@@ -1,5 +1,5 @@
-from routers import OAuth2, OAuthFlowsModel, APIRouter, OAuth2PasswordBearer, User, Depends, UserModel
-from routers import UserCreate, Session, get_db, HTTPException, hash_password, uuid, status, Annotated, OAuth2PasswordRequestForm, verify_password, jwt_generate
+from app.routers import OAuth2, OAuthFlowsModel, APIRouter, OAuth2PasswordBearer, User, Depends, UserModel
+from app.routers import User, Session, get_db, HTTPException, hash_password, uuid, status, Annotated, OAuth2PasswordRequestForm, verify_password, jwt_generate, UserCreate, APIRouter
 
 # use this for oauth2 password only, without client-id or token 
 class PasswordOnlyOAuth2(OAuth2):

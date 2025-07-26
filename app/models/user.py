@@ -1,4 +1,4 @@
-from models import Base, String, Column
+from app.models import Base, String, Column
 class UserModel(Base):
     __tablename__ = "users"
     id = Column(String, primary_key=True)

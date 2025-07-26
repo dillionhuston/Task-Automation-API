@@ -1,4 +1,4 @@
-from schemas import StringConstraints, EmailStr, BaseModel, Annotated
+from app.schemas import StringConstraints, EmailStr, BaseModel, Annotated
 
 class UserCreate(BaseModel):
     email: EmailStr
