@@ -1,11 +1,6 @@
 """Contains user auth and jwt generation"""
 from app.auth import jwt, os, pbkdf2_sha256, load_dotenv
-
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable not set")
-
+from app.auth import SECRET_KEY
 def hash_password(password: str):
     return pbkdf2_sha256.hash(password)
 

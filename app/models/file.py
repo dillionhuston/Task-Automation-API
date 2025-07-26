@@ -1,10 +1,14 @@
-from models import Base, Column, String, Integer, relationship, UserModel
-class FileModel(Base):
-    __tablename__ = "Files"
 
-    id = Column(String, primary_key=True)
-    hash = Column(String, nullable=False)
-    upload_date = Column(String)
-    user_id = Column(Integer)
-    filename = Column(String, unique=True, index=True)
-    user = relationship(UserModel, back_populates="files")
+from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from app.models.database import Base
+
+class FileModel(Base):
+    __tablename__ = "files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String)
+    content_type = Column(String)
+    user_id = Column(String, ForeignKey("users.id"))  # 
+
+    user = relationship("UserModel", back_populates="files")

@@ -1,19 +1,13 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///task_automation.db"  # Adjust for your DB
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
 Base = declarative_base()
-
-# Define your models (e.g., UserModel, FileModel) here or import them
+engine = create_engine("sqlite:///task_automation.db", echo=False)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
-    db = Session(engine)
+    db = SessionLocal()  
     try:
         yield db
     finally:
         db.close()
-
-Base.metadata.create_all(bind=engine)
