@@ -1,14 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
-from fastapi.security.oauth2 import OAuth2
-from sqlalchemy.orm import Session
-from typing import Annotated
-import uuid
-from app.schemas.User import UserCreate, User  # Pydantic models
-from app.models.user import UserModel  # SQLAlchemy model (lowercase user)
-from app.models.database import get_db
-from app.auth.utils import hash_password, verify_password, jwt_generate
+from routers import OAuth2, OAuthFlowsModel, APIRouter, OAuth2PasswordBearer, User, Depends, UserModel
+from routers import UserCreate, Session, get_db, HTTPException, hash_password, uuid, status, Annotated, OAuth2PasswordRequestForm, verify_password, jwt_generate
 
 # use this for oauth2 password only, without client-id or token 
 class PasswordOnlyOAuth2(OAuth2):
@@ -22,7 +13,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 @router.post("/register", response_model=User)
 async def register(user: UserCreate, db: Session = Depends(get_db)):
-    # Check for existing user
     db_user = db.query(UserModel).filter(
         (UserModel.email == user.email) | (UserModel.username == user.username)
     ).first()
@@ -44,6 +34,7 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
+
 @router.post("/login")
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -56,11 +47,8 @@ async def login(
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"}
         )
-
     token = jwt_generate({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}
-
-
 
 
 @router.get("/me")

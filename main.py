@@ -1,9 +1,12 @@
 from fastapi import FastAPI
-from app.models.database import SessionLocal, engine, Base
-from app.auth.routes import router as auth_router
+from app.routers import auth, user
+from app.models import Base,engine
+
 
 app = FastAPI()
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(auth, prefix="/auth", tags=["auth"])
+app.include_router(user, prefix="/user")
+
 Base.metadata.create_all(bind=engine)
 
 @app.get("/health")

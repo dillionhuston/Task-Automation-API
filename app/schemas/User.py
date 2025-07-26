@@ -1,5 +1,4 @@
-from pydantic import BaseModel, EmailStr, StringConstraints
-from typing import Annotated
+from schemas import StringConstraints, EmailStr, BaseModel, Annotated
 
 class UserCreate(BaseModel):
     email: EmailStr
