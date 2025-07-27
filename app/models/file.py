@@ -6,9 +6,9 @@ from app.models.database import Base
 class FileModel(Base):
     __tablename__ = "files"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)
     filename = Column(String)
-    content_type = Column(String)
-    user_id = Column(String, ForeignKey("users.id"))  # 
-
+    user_id = Column(String, ForeignKey("users.id")) 
+    file_path = Column(String) 
+    file_hash = Column(String)
     user = relationship("UserModel", back_populates="files")
