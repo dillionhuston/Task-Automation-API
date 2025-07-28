@@ -1,5 +1,6 @@
 
-from app.schemas import StringConstraints, field_validator, enum, BaseModel, UUID
+from app.schemas import StringConstraints, field_validator, enum, BaseModel
+import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -19,8 +20,8 @@ class TaskType(str, enum.Enum):
     
 
 class TaskCreate(BaseModel):
-    task_type = TaskType
-    schedule_time = datetime
+    task_type: TaskType
+    schedule_time: datetime
 
     @field_validator("schedule_time")
     def validate_future_time(cls, v):
@@ -29,10 +30,13 @@ class TaskCreate(BaseModel):
         return v
 
 class TaskResponse(BaseModel):
-    id: UUID
-    user_id: UUID
+    id: uuid.uuid4
+    user_id: uuid.uuid4
     task_type: TaskType
     schedule_time: datetime
     status: TaskStatus
             
+
+    class Config:
+        from_attributes = True  
     

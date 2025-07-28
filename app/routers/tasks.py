@@ -1,21 +1,44 @@
 from app.routers import get_current_user, get_db, Depends, TaskModel, User, Session, Annotated, HTTPException, status, APIRouter, TaskCreate
 from app.schemas.Tasks import TaskCreate, TaskResponse, TaskStatus, TaskType
 from app.utils.task import schedule_task
+from app.schemas.Tasks import TaskResponse
 router = APIRouter()
 
 
-router.post("/schedule")
-def schedule_task(
+@router.post("/schedule")
+def schedule_logic(
         task: TaskCreate,
         db: Session = Depends(get_db),
         user: dict = Depends(get_current_user)
 ):
     try:
-         new_task = schedule_task(db=db, user_id=user['id'], task_data=task)
-         return new_task
+        new_task = schedule_task(db=db, user_id=user.id, task_data=task)
+        return TaskResponse.model_validate(new_task)
     except Exception as e:
-         raise HTTPException(status_code=400, detail={e})    
+        raise HTTPException(status_code=400, detail=str(e))
 
     
+
+@router.get("/list_files", response_model= list[TaskResponse])
+def list_tasks(
+     db: Session = Depends(get_db), 
+     user: dict = Depends(get_current_user)
+):
+     tasks = db.query(TaskModel).filter(TaskModel.user_id == user['id']).all()
+     return tasks
+
+@router.get("/cancel/{task_id}", response_model=TaskResponse)
+def cancel_task(
+     task_id: int,
+     db: Session = Depends(get_db),
+     user: dict = Depends(get_current_user)
+):
+     task = db.query(TaskModel).filter(TaskModel.id == task_id, TaskModel.user_id == user['id']).first()
+     if not task:
+          raise HTTPException(status_code=400, detail="task doesnt exist or cant be found")
+     task.status = "cancelled"
+     db.commit()
+     db.refresh(task)
+     return task
 
 
