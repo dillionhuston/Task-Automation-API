@@ -5,6 +5,8 @@ from app.schemas.Tasks import TaskResponse
 router = APIRouter()
 
 
+
+# schedule a task 
 @router.post("/schedule")
 def schedule_logic(
         task: TaskCreate,
@@ -17,9 +19,11 @@ def schedule_logic(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    
 
-@router.get("/list_files", response_model= list[TaskResponse])
+
+
+#list tasks for user 
+@router.get("/list_tasks", response_model= list[TaskResponse])
 def list_tasks(
      db: Session = Depends(get_db), 
      user: dict = Depends(get_current_user)
@@ -27,6 +31,9 @@ def list_tasks(
      tasks = db.query(TaskModel).filter(TaskModel.user_id == user['id']).all()
      return tasks
 
+
+
+#cancel a task linked to user 
 @router.get("/cancel/{task_id}", response_model=TaskResponse)
 def cancel_task(
      task_id: int,
