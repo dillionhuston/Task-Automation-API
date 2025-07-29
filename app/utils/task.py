@@ -2,8 +2,15 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.tasks import TaskModel
 from app.schemas.Tasks import TaskCreate, TaskResponse
+from app.utils import Celery
 import os
 
+
+celery_app = Celery(
+    'tasks',
+    broker="redis://localhost:6379/0",
+    backend="redis://localhost:6379/0"
+)
 
 def schedule_task(db: Session, user_id, task_data: TaskCreate):
     new_task = TaskModel(
