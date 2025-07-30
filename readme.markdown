@@ -60,34 +60,6 @@ task_automation_api/
 └── pytest.ini
 ```
 
-## Timeline (8 Weeks)
-- **Week 1**: Project setup, user authentication.
-- **Week 2**: File management system.
-- **Week 3**: Task scheduling system.
-- **Week 4**: Celery background processing.
-- **Week 5**: Email notifications.
-- **Week 6**: Admin tools.
-- **Week 7**: Testing and polish.
-- **Week 8**: Deployment and documentation.
-
-## Milestones
-1. Week 1: User registration/login with JWT.
-2. Week 2: File upload/list/delete with hash validation.
-3. Week 3: Task scheduling in database.
-4. Week 4: Celery tasks with Docker Compose.
-5. Week 5: Email notifications.
-6. Week 6: Admin CLI/API.
-7. Week 7: 80%+ test coverage, Swagger UI.
-8. Week 8: Production-ready deployment.
-
-## Notes for Coding
-- Use `.env` for secrets (include `.env.example`).
-- Start with SQLite, switch to PostgreSQL in Week 4.
-- Write tests alongside features.
-- Validate inputs, secure JWTs, sanitize uploads.
-- Optimize database queries with indexes.
-- Update README weekly.
-
 ## Next Steps
 1. Set up Git repository and commit initial skeleton.
 2. Follow Week 1 tasks for authentication.
