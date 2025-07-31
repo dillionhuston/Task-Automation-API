@@ -6,17 +6,11 @@ from sqlalchemy.orm import Session
 from app.models.tasks import TaskModel
 from app.schemas.Tasks import TaskCreate, TaskResponse
 from app.utils import get_db
-from celery import Celery
 from datetime import datetime, timedelta
 from app.tasks.tasks import file_cleanup
+from app.utils.celery_instance import celery_app
 import os
 
-
-celery_app = Celery(
-    'tasks',
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
-)
 
 #scheudle task function
 def schedule_task(db: Session, user_id, task_data: TaskCreate):
