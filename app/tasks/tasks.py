@@ -1,7 +1,7 @@
 """CONTAINS ALL TASKS """
 
 import os 
-from app.models.tasks import TaskModel
+from app.models.tasks import Task
 from app.utils.celery_instance import celery_app
 from app.utils.task import Session, get_db, datetime, timedelta
 

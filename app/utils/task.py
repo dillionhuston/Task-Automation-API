@@ -3,7 +3,7 @@
 
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from app.models.tasks import TaskModel
+from app.models.tasks import Task
 from app.schemas.Tasks import TaskCreate, TaskResponse
 from app.utils import get_db
 from datetime import datetime, timedelta
@@ -14,7 +14,7 @@ import os
 
 #scheudle task function
 def schedule_task(db: Session, user_id, task_data: TaskCreate):
-    new_task = TaskModel(
+    new_task = Task(
         user_id = user_id,
         task_type = task_data.task_type,
         schedule_time = task_data.schedule_time,

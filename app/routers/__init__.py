@@ -13,7 +13,7 @@ from app.schemas.File import File
 from app.schemas.Tasks import TaskCreate
 from app.models.user import UserModel 
 from app.models.file import FileModel
-from app.models.tasks import TaskModel
+from app.models.tasks import Task
 from app.models.database import get_db
 from app.auth.auth import hash_password, verify_password, jwt_generate
 from app.dependencies.auth_utils import get_current_user

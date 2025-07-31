@@ -1,4 +1,4 @@
-from app.routers import get_current_user, get_db, Depends, TaskModel, User, Session, Annotated, HTTPException, status, APIRouter, TaskCreate
+from app.routers import get_current_user, get_db, Depends, Task, User, Session, Annotated, HTTPException, status, APIRouter, TaskCreate
 from app.schemas.Tasks import TaskCreate, TaskResponse, TaskStatus, TaskType
 from app.utils.task import schedule_task
 from app.schemas.Tasks import TaskResponse
@@ -28,7 +28,7 @@ def list_tasks(
      db: Session = Depends(get_db), 
      user: dict = Depends(get_current_user)
 ):
-     tasks = db.query(TaskModel).filter(TaskModel.user_id == user['id']).all()
+     tasks = db.query(Task).filter(Task.user_id == user['id']).all()
      return tasks
 
 
@@ -40,7 +40,7 @@ def cancel_task(
      db: Session = Depends(get_db),
      user: dict = Depends(get_current_user)
 ):
-     task = db.query(TaskModel).filter(TaskModel.id == task_id, TaskModel.user_id == user['id']).first()
+     task = db.query(Task).filter(Task.id == task_id, Task.user_id == user['id']).first()
      if not task:
           raise HTTPException(status_code=400, detail="task doesnt exist or cant be found")
      task.status = "cancelled"

@@ -3,7 +3,9 @@ from app.routers.auth import router as auth_router
 from app.routers.files import router as file_router
 from app.routers.tasks import router as task_router
 from app.models.database import Base, engine
-from app.models import UserModel
+from app.models.user import UserModel
+from app.models.tasks import Task
+from app.models.file import FileModel
 
 app = FastAPI()
 

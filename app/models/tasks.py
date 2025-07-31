@@ -1,19 +1,13 @@
-import uuid
-from sqlalchemy import Column, String, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime, timezone
+# app/models.py or app/models/task.py
 
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from .database import Base
 
-def utcnow():
-    return datetime.now(timezone.utc)
+class Task(Base):
+    __tablename__ = "tasks"
 
-class TaskModel(Base):
-    __tablename__ = "Tasks"
-
-    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))  # make sure this matches __tablename__
     task_type = Column(String, nullable=False)
-    schedule_time = Column(DateTime(timezone=True), nullable=False, default=utcnow)
-    status = Column(String, nullable=False, default="scheduled")
+    schedule_time = Column(DateTime, nullable=False)
+    status = Column(String, default="pending")
