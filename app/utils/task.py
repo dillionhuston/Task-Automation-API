@@ -7,15 +7,15 @@ from app.models.tasks import Task
 from app.schemas.Tasks import TaskCreate, TaskResponse
 from app.utils import get_db
 from datetime import datetime, timedelta
-from app.tasks.tasks import file_cleanup
 from app.utils.celery_instance import celery_app
 import os
+import uuid
 
 
 #scheudle task function
 def schedule_task(db: Session, user_id, task_data: TaskCreate):
     new_task = Task(
-        user_id = user_id,
+        user_id = uuid.UUID( user_id),
         task_type = task_data.task_type,
         schedule_time = task_data.schedule_time,
         status = "scheduled"
@@ -23,6 +23,8 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate):
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
+
+    from app.tasks.tasks import file_cleanup
 
     if task_data.task_type == "file_cleanup":
         file_cleanup.apply_async(args=[new_task.id], eta=new_task.schedule_time)

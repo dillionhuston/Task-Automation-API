@@ -1,33 +1,41 @@
-"""CONTAINS ALL TASKS """
-
-import os 
+import os
 from app.models.tasks import Task
 from app.utils.celery_instance import celery_app
-from app.utils.task import Session, get_db, datetime, timedelta
+from app.models.database import SessionLocal  
+from datetime import datetime, timedelta
 
 
-
-@celery_app.task
+@celery_app.task(name="app.tasks.tasks.file_cleanup")
 def file_cleanup(task_id: int):
-    db: Session = get_db()
+    task = None
     try:
-        task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
-        if task:
-            task.status == "running"
-            db.commit()
+        with SessionLocal() as db:  
+            task = db.query(Task).filter(Task.id == task_id).first()
+            if task:
+                task.status = "running" # removed "=="
+                db.commit()
 
-            threshold = datetime.now() - timedelta(days=7)
-            for file in os.listdir("uploads"):
-                filepath = os.path.join("uploads", file)
-                if os.path.isfile(filepath) and datetime.fromtimestamp(os.path.getmtime(filepath) < threshold):
-                    os.remove(filepath)
-                    print(f"successfully delete{filepath}")
-            task.status = "completed"
-            db.commit()
+                threshold = datetime.now() - timedelta(days=7)
+                uploads_dir = "uploads"
+                for file in os.listdir(uploads_dir):
+                    filepath = os.path.join(uploads_dir, file)
+                    # fixed parenthes
+                    if os.path.isfile(filepath) and datetime.fromtimestamp(os.path.getmtime(filepath)) < threshold:
+                        os.remove(filepath)
+                        print(f"Successfully deleted {filepath}")
+
+                task.status = "completed"
+                db.commit()
+            else:
+                print(f"No task found with id {task_id}")
 
     except Exception as e:
-        task.status = "failed" if task else None
-        db.commit()
-        print(f"file cleanup failed for {task.id}")
-    finally:
-        db.close()
+        print(f"File cleanup failed for task {task_id}: {e}")
+        if task:
+            with SessionLocal() as db:
+                task.status = "failed"
+                db.merge(task)
+                db.commit()
+        else:
+            print("No task object to update status")
+

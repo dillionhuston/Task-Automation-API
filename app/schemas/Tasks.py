@@ -3,6 +3,8 @@ from app.schemas import StringConstraints, field_validator, enum, BaseModel
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+from uuid import UUID
+
 
 
 def aware_utcnow():
@@ -30,11 +32,12 @@ class TaskCreate(BaseModel):
         return v
 
 class TaskResponse(BaseModel):
-    id: uuid.uuid4
-    user_id: uuid.uuid4
-    task_type: TaskType
+    id: int               
+    user_id: UUID         
+    task_type: str       
     schedule_time: datetime
-    status: TaskStatus
+    status: str          
+
             
 
     class Config:
