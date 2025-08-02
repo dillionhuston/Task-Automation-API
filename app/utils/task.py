@@ -1,13 +1,13 @@
 
 """CONTAINS SCHEDULE TASK, NOTHING ELSE """
-
+from app.tasks.tasks import file_cleanup
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.tasks import Task
 from app.schemas.Tasks import TaskCreate, TaskResponse
 from app.utils import get_db
-from datetime import datetime, timedelta
 from app.utils.celery_instance import celery_app
+from datetime import datetime, timedelta
 import os
 import uuid
 
@@ -27,9 +27,14 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate):
     from app.tasks.tasks import file_cleanup
 
     if task_data.task_type == "file_cleanup":
-        file_cleanup.apply_async(args=[new_task.id], eta=new_task.schedule_time)
+        celery_app.send_task(
+            name = "app.tasks.tasks.file_cleanup",
+            args=[new_task.id],
+            eta=new_task.schedule_time
+        )
         print(f"task sceduled for {task_data.task_type} ID: {new_task.id} for user {new_task.user_id} time: {new_task.schedule_time}")
-
+    
+    #todo: add reminder
     elif task_data.task_type == "reminder":
         print(f"Task sceduled. ID: {new_task.id} for user {new_task.user_id} at {new_task.schedule_time}")
     return TaskResponse.model_validate(new_task)

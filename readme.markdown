@@ -1,66 +1,127 @@
+# Task Automation API
 
-# Task Automation API Platform
+A FastAPI-based task scheduler for users to register, log in, and schedule tasks (`file_cleanup` or `reminder`) to run at future times. The `file_cleanup` task deletes files older than 7 days in the `uploads` directory. Built with Celery for asynchronous tasks, SQLAlchemy for database management, and Redis as the broker/backend, this project showcases backend development and Windows debugging skills for a portfolio.
 
-## Overview
-The Task Automation API Platform is a backend-only FastAPI application that enables users to upload files, schedule automated tasks (e.g., reminders, cleanup jobs), and receive email notifications. It features secure JWT-based authentication, admin tools, and containerized deployment with Docker. This project showcases my skills in building  secure APIs with modern Python technologies.
+## Why This Project
+This API demonstrates my ability to build a scalable backend with FastAPI, Celery, and SQLAlchemy, while solving real-world problems like file cleanup. I debugged Windows-specific Celery issues (`[WinError 6]`) using the `solo` pool, reinforcing my problem-solving skills for a backend developer role.
 
-## Features
-- User Authentication: Secure registration and login with JWT.
-- File Management: Upload, list, and delete files with SHA-256 hash validation.
-- Task Scheduler: Schedule and manage background tasks (reminders, file cleanup).
-- Background Processing: Asynchronous task execution with Celery.
-- Email Notifications: Alerts for task events (creation, completion, failure).
-- Admin Tools: CLI and API for user/task management.
-- Deployment: Containerized with Docker and Docker Compose.
+## Prerequisites
+- Python 3.8+
+- Redis - Download from [Microsoft Redis Archive](https://github.com/microsoftarchive/redis/releases) for Windows
+- Virtual environment
+- Packages: `fastapi`, `uvicorn`, `celery`, `redis`, `sqlalchemy`, `pydantic`
 
-## Tech Stack
-- **Framework**: FastAPI
-- **Database**: PostgreSQL (production), SQLite (development)
-- **ORM**: SQLAlchemy with Alembic
-- **Task Queue**: Celery with Redis
-- **Email**: SendGrid or smtplib
-- **Containerization**: Docker, Docker Compose
-- **Testing**: pytest, FastAPI TestClient
-- **Security**: python-jose (JWT), passlib
-- **Other**: python-multipart, python-dotenv
+## Setup Instructions
+
+1. **Clone the Repository**
+   ```bash
+   git clone <repository-url>
+   cd Task-Automation-API
+   ```
+
+2. **Activate Virtual Environment**
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\activate  # Windows; use `source venv/bin/activate` for Linux/Mac
+   ```
+
+3. **Install Dependencies**
+   ```bash
+   pip install fastapi uvicorn celery redis sqlalchemy pydantic
+   ```
+
+4. **Start Redis**
+   ```bash
+   redis-server
+   ```
+   Verify with `redis-cli ping` (should return `PONG`).
+
+5. **Run FastAPI**
+   ```bash
+   fastapi dev main.py
+   ```
+   Access at `http://localhost:8000`. Use `http://localhost:8000/docs` for interactive API docs. Check health:
+   ```bash
+   curl http://localhost:8000/health
+   ```
+   Expected output: `{"success": 200}`
+
+6. **Start Celery Worker**
+   ```bash
+   celery -A app.utils.celery_instance.celery_app worker --pool=solo --loglevel=info
+   ```
+   Ensures Windows compatibility.
+
+## Usage
+
+Use `http://localhost:8000/docs` for most interactions (recommended). Alternatively, use `curl`.
+
+1. **Register**
+   - **Docs**: In `/docs`, use `/register` (POST) with `username` and `password`.
+   - **curl**:
+     ```bash
+     curl -X POST "http://localhost:8000/register" -H "Content-Type: application/json" -d '{"username": "your_username", "password": "your_password"}'
+     ```
+
+2. **Log In**
+   - **Docs**: Use `/login` (POST) to get a token.
+   - **curl**:
+     ```bash
+     curl -X POST "http://localhost:8000/login" -H "Content-Type: application/json" -d '{"username": "your_username", "password": "your_password"}'
+     ```
+
+3. **Schedule a Task**
+   Schedule `file_cleanup` (deletes files older than 7 days in `uploads`) or `reminder` for a future time (UTC, e.g., `2025-08-02T20:00:00Z` for 8:00 PM UTC, after 7:36 PM BST, August 2, 2025).
+   - **Docs**: Use `/schedule` (POST), select `task_type` (`file_cleanup` or `reminder`), set `schedule_time`, and authorize with token.
+   - **curl**:
+     ```bash
+     curl -X POST "http://localhost:8000/schedule" -H "Authorization: Bearer <your_token>" -H "Content-Type: application/json" -d '{"task_type": "file_cleanup", "schedule_time": "2025-08-02T20:00:00Z"}'
+     ```
+   - Ensure `uploads` exists with test files for `file_cleanup`.
+   - **Expected Celery Log**:
+     ```
+     Task app.tasks.tasks.file_cleanup[41bf67a4-8cf3-4b35-9eaf-6d9f4dc5b178] received
+     ```
+
+4. **List/Cancel Tasks**
+   - **List (Docs)**: Use `/list_tasks` (GET) with token.
+   - **List (curl)**:
+     ```bash
+     curl -X GET "http://localhost:8000/list_tasks" -H "Authorization: Bearer <your_token>"
+     ```
+   - **Cancel (Docs)**: Use `/cancel/{task_id}` (GET) with token.
+   - **Cancel (curl)**:
+     ```bash
+     curl -X GET "http://localhost:8000/cancel/<task_id>" -H "Authorization: Bearer <your_token>"
+     ```
 
 ## Project Structure
 ```
-task_automation_api/
+Task-Automation-API/
 ├── app/
-│   ├── main.py           # FastAPI app
-│   ├── models.py         # SQLAlchemy models
-│   ├── schemas.py        # Pydantic schemas
-│   ├── auth.py           # Authentication logic
-│   ├── routes/           # API endpoints
-│   │   ├── users.py
-│   │   ├── files.py
-│   │   ├── tasks.py
-│   │   └── admin.py
-│   ├── tasks.py          # Celery tasks
-│   ├── utils/            # Helpers
-│   │   ├── email.py
-│   │   ├── file.py
-│   │   └── task.py
-│   ├── dependencies.py   # Dependency injection
-│   └── config.py         # Configuration
-├── migrations/           # Alembic migrations
-├── tests/                # Tests
-│   ├── test_auth.py
-│   ├── test_files.py
-│   ├── test_tasks.py
-│   └── test_admin.py
-├── scripts/              # Admin CLI
-│   └── admin_cli.py
-├── .env                  # Environment variables
-├── .gitignore
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── pytest.ini
+│   ├── models/         # Database models
+│   ├── routers/       # API endpoints
+│   ├── schemas/       # Pydantic schemas
+│   ├── tasks/         # Celery tasks (file_cleanup)
+│   ├── utils/         # Celery and scheduling logic
+│   ├── main.py        # FastAPI entry point
+├── uploads/           # Files for file_cleanup (deletes files >7 days old)
+├── venv/             # Virtual environment
+├── README.md         # This file
 ```
 
-## Next Steps
-1. Set up Git repository and commit initial skeleton.
-2. Follow Week 1 tasks for authentication.
-3. Review progress weekly against milestones.
+## Notes
+- **FastAPI Docs**: Use `http://localhost:8000/docs` for easy testing; `curl` is an alternative.
+- **Tasks**:
+  - `file_cleanup`: Deletes files in `uploads` older than 7 days, can be changed.
+  - `reminder`: Assumed for notifications (define in `app/tasks/tasks.py`).
+- **Scheduling**: `schedule_time` must be future-dated (UTC).
+- **Windows**: `--pool=solo` avoids `[WinError 6]` errors.
+- **Portfolio**: Showcases FastAPI, Celery, SQLAlchemy, and debugging skills.
+
+
+## Future Improvements
+- Validate future `schedule_time`.
+- Implement `reminder` (e.g., email notifications).
+- Add Celery Beat for recurring tasks.
+- Deploy to Render.com.

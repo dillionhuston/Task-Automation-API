@@ -3,6 +3,7 @@ from app.models.tasks import Task
 from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal  
 from datetime import datetime, timedelta
+from celery import shared_task
 
 
 @celery_app.task(name="app.tasks.tasks.file_cleanup")
@@ -15,7 +16,7 @@ def file_cleanup(task_id: int):
                 task.status = "running" # removed "=="
                 db.commit()
 
-                threshold = datetime.now() - timedelta(days=7)
+                threshold = datetime.now() - timedelta(days=1)
                 uploads_dir = "uploads"
                 for file in os.listdir(uploads_dir):
                     filepath = os.path.join(uploads_dir, file)
