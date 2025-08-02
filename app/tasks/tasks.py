@@ -40,3 +40,31 @@ def file_cleanup(task_id: int):
         else:
             print("No task object to update status")
 
+@celery_app.task(name="app.tasks.task.send_reminder")  
+def send_reminder(task_id: int):
+    task = None
+    try:
+        with SessionLocal() as db:
+            task = db.query(Task).filter(Task.id == task_id).first()
+            if not task:
+                print(f"No task found with ID {task_id}")
+                return
+            task.status = "scheduled"
+            db.commit()
+
+            reminder_time = task.schedule_time
+            if reminder_time:
+                print(f"[Reminder] Task scheduled for {reminder_time} | Type: {task.task_type}")
+            else:
+                print("Task has no schedule_time set.")
+
+            task.status = "completed"
+            db.commit()
+
+    except Exception as e:
+        print(f"Reminder task failed for ID {task_id}: {e}")
+        if task:
+            with SessionLocal() as db:
+                task.status = "failed"
+                db.merge(task)
+                db.commit()
