@@ -11,11 +11,12 @@ router = APIRouter()
 def schedule_logic(
         task: TaskCreate,
         db: Session = Depends(get_db),
-        user: dict = Depends(get_current_user)
+        user: dict = Depends(get_current_user),
 ):
     try:
         new_task = schedule_task(db=db, user_id=user.id, task_data=task)
         return TaskResponse.model_validate(new_task)
+    
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

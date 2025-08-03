@@ -8,6 +8,7 @@ from app.schemas.Tasks import TaskCreate, TaskResponse
 from app.utils import get_db
 from app.utils.celery_instance import celery_app
 from datetime import datetime, timedelta
+from app.utils.email import send_completion_email, send_email_task, schedule_reminder
 import os
 import uuid
 
@@ -18,10 +19,12 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate):
         user_id = uuid.UUID( user_id),
         task_type = task_data.task_type,
         schedule_time = task_data.schedule_time,
-        status = "scheduled"
+        status = "scheduled",
+        title = task_data.title
     )
     db.add(new_task)
     db.commit()
+    schedule_reminder(new_task.id, receiver_email="") # set this yourself
     db.refresh(new_task)
 
     from app.tasks.tasks import file_cleanup
@@ -34,7 +37,6 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate):
         )
         print(f"task sceduled for {task_data.task_type} ID: {new_task.id} for user {new_task.user_id} time: {new_task.schedule_time}")
     
-    #todo: add reminder
     elif task_data.task_type == "reminder":
         celery_app.send_task(
             name = "app.tasks.task.send_reminder",

@@ -24,6 +24,8 @@ class TaskType(str, enum.Enum):
 class TaskCreate(BaseModel):
     task_type: TaskType
     schedule_time: datetime
+    title: str
+    
 
     @field_validator("schedule_time")
     def validate_future_time(cls, v):
@@ -37,6 +39,7 @@ class TaskResponse(BaseModel):
     task_type: str       
     schedule_time: datetime
     status: str          
+    title: str
 
             
 

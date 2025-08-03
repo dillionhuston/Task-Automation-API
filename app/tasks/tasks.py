@@ -4,6 +4,7 @@ from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal  
 from datetime import datetime, timedelta
 from celery import shared_task
+from app.utils.email import schedule_reminder, send_completion_email
 
 
 @celery_app.task(name="app.tasks.tasks.file_cleanup")
@@ -27,6 +28,7 @@ def file_cleanup(task_id: int):
 
                 task.status = "completed"
                 db.commit()
+                send_completion_email(task_id,receiver_email="d9392828@gmail.com")
             else:
                 print(f"No task found with id {task_id}")
 
@@ -40,6 +42,9 @@ def file_cleanup(task_id: int):
         else:
             print("No task object to update status")
 
+
+
+
 @celery_app.task(name="app.tasks.task.send_reminder")  
 def send_reminder(task_id: int):
     task = None
@@ -50,6 +55,7 @@ def send_reminder(task_id: int):
                 print(f"No task found with ID {task_id}")
                 return
             task.status = "scheduled"
+            schedule_reminder(task_id, receiver_email="d9392828@gmail.com")
             db.commit()
 
             reminder_time = task.schedule_time

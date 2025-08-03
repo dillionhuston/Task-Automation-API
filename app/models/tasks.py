@@ -11,3 +11,4 @@ class Task(Base):
     task_type = Column(String, nullable=False)
     schedule_time = Column(DateTime, nullable=False)
     status = Column(String, default="pending")
+    title = Column(String, default="")
