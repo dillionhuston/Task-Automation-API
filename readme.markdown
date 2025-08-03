@@ -95,6 +95,50 @@ Use `http://localhost:8000/docs` for most interactions (recommended). Alternativ
      curl -X GET "http://localhost:8000/cancel/<task_id>" -H "Authorization: Bearer <your_token>"
      ```
 
+
+# Enabling Email Reminders for Tasks
+
+To enable email reminders for tasks, follow these steps:
+
+## 1. Add Your Details
+
+Update the `.env` file with your Gmail address and app password. Example:
+```bash
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+```
+
+
+## 2. Create an App Password in Google
+
+Since Gmail requires app passwords for third-party apps:
+
+- Go to your [Google Account settings](https://myaccount.google.com/).
+- Enable 2-factor authentication if not already enabled.
+- Navigate to **Security > App passwords**.
+- Generate an app password and use that 16-digit password in the `.env` file.
+
+## 3. Example Reminder
+
+See the image below for a sample email reminder sent by the system:
+
+![Email Reminder Example](reminder_email.png)
+
+## 4. Specify Receiver Email
+
+When scheduling a reminder task, ensure you specify the receiver's email in the code. Update the `/utils/schedule_task` call as follows:
+
+```python
+db.add(new_task)
+db.commit()
+schedule_reminder(new_task.id, receiver_email="")  # Set this yourself
+db.refresh(new_task)
+
+
+```
+
+   
+
 ## Project Structure
 ```
 Task-Automation-API/
