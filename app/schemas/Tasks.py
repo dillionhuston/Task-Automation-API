@@ -25,6 +25,7 @@ class TaskCreate(BaseModel):
     task_type: TaskType
     schedule_time: datetime
     title: str
+    reciever_email:str
     
 
     @field_validator("schedule_time")

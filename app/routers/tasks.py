@@ -14,7 +14,7 @@ def schedule_logic(
         user: dict = Depends(get_current_user),
 ):
     try:
-        new_task = schedule_task(db=db, user_id=user.id, task_data=task)
+        new_task = schedule_task(db=db, user_id=user.id, task_data=task, reciever_email=task.reciever_email)
         return TaskResponse.model_validate(new_task)
     
     except Exception as e:

@@ -21,7 +21,7 @@ if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
     raise ValueError("EMAIL or PASSWORD environment variable is missing")
 
 @celery_app.task(name="app.utils.email.")
-def send_email_task(receiver_email: str, task_id: int, email_type: str = "reminder"):
+def send_email_task(receiver_email: str, task_id: int, email_type: str):
     db: Session = SessionLocal()
     try:
         from app.models.tasks import Task  
@@ -34,12 +34,13 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str = "remind
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = receiver_email
         msg['Subject'] = (
-            f"Reminder: Task '{task.title}' Due Soon" if email_type == "reminder"
-            else f"Task '{task.title}' Completed"
-        )
+        f"Reminder: Task '{task.title}' Due Soon"
+        if email_type == "reminder"
+        else f"Task '{task.title}' completed"
+)
         body = (
             f"Dear User,\n\n"
-            f"This is a {'reminder' if email_type == 'reminder' else 'notification'} for task '{task.title}'.\n"
+            f"This is a {'reminder' if email_type == 'reminder' else 'completion'} for task '{task.title}'.\n"
             f"Details:\n"
             f"- Task ID: {task.id}\n"
             f"- Due Date: {task.schedule_time}\n"
@@ -69,4 +70,4 @@ def schedule_reminder(task_id: int, receiver_email: str):
     send_email_task.delay(receiver_email, task_id, email_type="reminder")
 
 def send_completion_email(task_id: int, receiver_email: str):
-    send_email_task.delay(receiver_email, task_id, email_type="completion")
+    send_email_task.delay(receiver_email, task_id, email_type="completed")

@@ -14,7 +14,7 @@ import uuid
 
 
 #scheudle task function
-def schedule_task(db: Session, user_id, task_data: TaskCreate):
+def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:str):
     new_task = Task(
         user_id = uuid.UUID( user_id),
         task_type = task_data.task_type,
@@ -24,7 +24,6 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate):
     )
     db.add(new_task)
     db.commit()
-    schedule_reminder(new_task.id, receiver_email="") # set this yourself
     db.refresh(new_task)
 
     from app.tasks.tasks import file_cleanup
@@ -32,15 +31,15 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate):
     if task_data.task_type == "file_cleanup":
         celery_app.send_task(
             name = "app.tasks.tasks.file_cleanup",
-            args=[new_task.id],
+            args=[str(new_task.id), reciever_email],
             eta=new_task.schedule_time
         )
         print(f"task sceduled for {task_data.task_type} ID: {new_task.id} for user {new_task.user_id} time: {new_task.schedule_time}")
     
     elif task_data.task_type == "reminder":
         celery_app.send_task(
-            name = "app.tasks.task.send_reminder",
-            args=[new_task.id],
+            name = "app.tasks.task.schedule_reminder",
+            args=[str(new_task.id), reciever_email],
             eta=new_task.schedule_time
         )
         print(f"Task sceduled. ID: {new_task.id} for user {new_task.user_id} at {new_task.schedule_time}")

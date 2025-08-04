@@ -8,13 +8,13 @@ from app.utils.email import schedule_reminder, send_completion_email
 
 
 @celery_app.task(name="app.tasks.tasks.file_cleanup")
-def file_cleanup(task_id: int):
+def file_cleanup(task_id: int, reciever_email: str):
     task = None
     try:
         with SessionLocal() as db:  
             task = db.query(Task).filter(Task.id == task_id).first()
             if task:
-                task.status = "running" # removed "=="
+                task.status = "running" 
                 db.commit()
 
                 threshold = datetime.now() - timedelta(days=1)
@@ -28,7 +28,7 @@ def file_cleanup(task_id: int):
 
                 task.status = "completed"
                 db.commit()
-                send_completion_email(task_id,receiver_email="d9392828@gmail.com")
+                send_completion_email(task_id,reciever_email)
             else:
                 print(f"No task found with id {task_id}")
 
@@ -46,7 +46,7 @@ def file_cleanup(task_id: int):
 
 
 @celery_app.task(name="app.tasks.task.send_reminder")  
-def send_reminder(task_id: int):
+def send_reminder(task_id: int, receiver_email: str):
     task = None
     try:
         with SessionLocal() as db:
@@ -55,7 +55,7 @@ def send_reminder(task_id: int):
                 print(f"No task found with ID {task_id}")
                 return
             task.status = "scheduled"
-            schedule_reminder(task_id, receiver_email="d9392828@gmail.com")
+            schedule_reminder(task_id, receiver_email)
             db.commit()
 
             reminder_time = task.schedule_time
