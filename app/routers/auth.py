@@ -21,14 +21,12 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email or username already taken"
         )
-
     db_user = UserModel(
         username=user.username,
         email=user.email,
         hashed_password=hash_password(user.password),
         id=str(uuid.uuid4())
     )
-
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

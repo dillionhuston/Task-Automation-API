@@ -19,3 +19,5 @@ def verify_token(token: str) -> dict:
         raise ValueError("token has expired")
     except jwt.InvalidTokenError:
         raise ValueError("invalid token")
+    
+    

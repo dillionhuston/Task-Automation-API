@@ -1,5 +1,6 @@
 from app.dependencies import OAuth2PasswordBearer,Depends, jwt, Session, HTTPException, get_db, status, SECRET_KEY, UserModel
 from app.auth.auth import verify_token
+from jwt import ExpiredSignatureError, InvalidTokenError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
@@ -14,11 +15,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         payload = verify_token(token)
         user_id = payload.get("sub")
         if user_id is None:
-            raise credentials_exception
+            raise jwt.exceptions.InvalidTokenError
     except ValueError:
-        raise credentials_exception
+        raise jwt.exceptions.InvalidTokenError
     
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if user is None:
-        raise credentials_exception
+        raise jwt.exceptions.InvalidTokenError
     return user

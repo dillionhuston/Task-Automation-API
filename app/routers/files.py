@@ -1,20 +1,35 @@
-from app.routers import APIRouter, UploadFile, Depends, get_current_user, Session, File, User, get_db
-from app.routers import compute, validate_file, save_file,FileModel, uuid, os, HTTPException, status
-
+from typing import List, Dict, Any
+from fastapi import APIRouter, UploadFile, Depends, File, HTTPException, status
+from sqlalchemy.orm import Session
+from app.routers import compute, validate_file, save_file, FileModel, uuid, os
+from app.routers import get_current_user, get_db, User
 
 router = APIRouter()
 
+
 @router.post("/upload")
 async def upload_file(
-    file: UploadFile = File(),
+    file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
+    user: User = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """
+    Upload a file, compute its hash, save it to disk, and store metadata in the database.
+    Args:
+        file (UploadFile): The file uploaded by the user.
+        db (Session): Database session dependency.
+        user (User): The currently authenticated user.
+    Returns:
+        dict: Confirmation message and the ID of the uploaded file.
+    Raises:
+        HTTPException: If the file is missing or invalid.
+    """
     if not file:
-        raise HTTPException(status_code=400, detail="File missing or invalid.")
+        raise status.HTTP_404_NOT_FOUND
     validate_file(file)
-    hash = compute(file.file)
-    file.file.seek(0)
+    
+    file_hash = compute(file.file)
+    file.file.seek(0)  # Reset file pointer after reading
 
     filename, file_path = save_file(file, user.id)
 
@@ -23,16 +38,29 @@ async def upload_file(
         user_id=user.id,
         filename=filename,
         file_path=file_path,
-        file_hash=hash
+        file_hash=file_hash,
     )
-
     db.add(new_file)
     db.commit()
     db.refresh(new_file)
     return {"message": "File uploaded successfully", "file_id": new_file.id}
 
+
 @router.get("/list")
-def list_files(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def list_files(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> List[Dict[str, Any]]:
+    """
+    List all files uploaded by the current user.
+    Args:
+        user (User): The currently authenticated user.
+        db (Session): Database session dependency.
+    Returns:
+        List[dict]: A list of file metadata dictionaries.
+    Raises:
+        HTTPException: On internal server error during database query.
+    """
     try:
         files = db.query(FileModel).filter(FileModel.user_id == user.id).all()
         return [
@@ -44,20 +72,35 @@ def list_files(user: User = Depends(get_current_user), db: Session = Depends(get
             }
             for f in files
         ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except:
+        raise FileNotFoundError
 
 
 @router.delete("/delete/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_file(file_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def delete_file(
+    file_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> None:
+    """
+    Delete a file by ID if it belongs to the current user.
+    Args:
+        file_id (str): The ID of the file to delete.
+        db (Session): Database session dependency.
+        user (User): The currently authenticated user.
+    Raises:
+        HTTPException: If the file is not found or the user is unauthorized.
+        HTTPException: On error deleting the file from disk or database.
+    """
     file = db.query(FileModel).filter(FileModel.id == file_id, FileModel.user_id == user.id).first()
     if not file:
-        raise HTTPException(status_code=404, detail="file not found or unauthorized")
+        raise status.HTTP_404_NOT_FOUND
     try:
         os.remove(file.file_path)
     except FileNotFoundError:
+        # File was already deleted from disk; continue
         pass
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error deleting file: {e}")
+    except:
+        raise status.HTTP_406_NOT_ACCEPTABLE
     db.delete(file)
     db.commit()

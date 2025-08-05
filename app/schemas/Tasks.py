@@ -13,11 +13,13 @@ def aware_utcnow():
 class TaskStatus(str, enum.Enum):
     scheduled = "scheduled"
     completed = "completed"
+    running = "running"
     canceled = "canceled"
+    failed = "failed"
 
 
 class TaskType(str, enum.Enum):
-    remider =  "reminder"
+    reminder =  "reminder"
     file_cleanup = "file_cleanup"
     
 

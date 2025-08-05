@@ -5,6 +5,7 @@ from email.message import EmailMessage
 from dotenv import load_dotenv
 from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal
+from app.schemas.Tasks import TaskStatus
 from sqlalchemy.orm import Session
 import logging
 
@@ -30,13 +31,16 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
             logger.error(f"Task with ID {task_id} not found")
             return
         
+        is_reminder = TaskStatus.scheduled
+        is_completed = TaskStatus.completed
+        
         msg = EmailMessage()
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = receiver_email
         msg['Subject'] = (
         f"Reminder: Task '{task.title}' Due Soon"
-        if email_type == "reminder"
-        else f"Task '{task.title}' completed"
+        if is_reminder
+        else  f"Task '{task.title}' completed"
 )
         body = (
             f"Dear User,\n\n"
@@ -67,7 +71,7 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
         db.close()
 
 def schedule_reminder(task_id: int, receiver_email: str):
-    send_email_task.delay(receiver_email, task_id, email_type="reminder")
+    send_email_task.delay(receiver_email, task_id, email_type=TaskStatus.scheduled)
 
 def send_completion_email(task_id: int, receiver_email: str):
-    send_email_task.delay(receiver_email, task_id, email_type="completed")
+    send_email_task.delay(receiver_email, task_id, email_type=TaskStatus.completed)
