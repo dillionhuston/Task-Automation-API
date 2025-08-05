@@ -142,15 +142,27 @@ When scheduling a reminder task, make sure to include the receiver_email in the 
 ```
 Task-Automation-API/
 ├── app/
-│   ├── models/         # Database models
-│   ├── routers/       # API endpoints
-│   ├── schemas/       # Pydantic schemas
-│   ├── tasks/         # Celery tasks (file_cleanup)
-│   ├── utils/         # Celery and scheduling logic
-│   ├── main.py        # FastAPI entry point
-├── uploads/           # Files for file_cleanup (deletes files >7 days old)
-├── venv/             # Virtual environment
-├── README.md         # This file
+│   ├── auth/
+│   ├── dependencies/
+│   ├── models/
+│   ├── routers/
+│   ├── schemas/
+│   ├── scripts/
+│   ├── tasks/
+│   └── utils/
+│       ├── __init__.py
+│       ├── config.py
+│       ├── uploads/
+│       └── venv/
+├── .env
+├── .gitignore
+├── initdb.py
+├── main.py
+├── thisfile.markdown
+├── reminder_email.png
+├── requirements.txt
+├── task_automation.db
+└── worker.py
 ```
 
 ## Notes
