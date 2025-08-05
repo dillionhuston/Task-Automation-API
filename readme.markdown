@@ -1,182 +1,115 @@
 # Task Automation API
 
-A FastAPI-based task scheduler for users to register, log in, and schedule tasks (`file_cleanup` or `reminder`) to run at future times. The `file_cleanup` task deletes files older than 7 days in the `uploads` directory. Built with Celery for asynchronous tasks, SQLAlchemy for database management, and Redis as the broker/backend, this project showcases backend development and Windows debugging skills for a portfolio.
+Hi all,
+
+This repository is a task-automation backend built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**. It allows users to register, log in, and schedule two types of tasks—**file cleanup** or **reminders**—at future times. File cleanup removes files older than a configurable age from the `uploads/` folder, and reminders send emails to a specified address. The project is asynchronous, tested on Windows with the solo Celery pool, and serves as a portfolio project showcasing real-world backend skills.
 
 ## Why This Project
-This API demonstrates my ability to build a scalable backend with FastAPI, Celery, and SQLAlchemy, while solving real-world problems like file cleanup. I debugged Windows-specific Celery issues (`[WinError 6]`) using the `solo` pool, reinforcing my problem-solving skills for a backend developer role.
+This project demonstrates:
+- **FastAPI**’s dependency injection and Pydantic models
+- **Celery** for background job processing
+- **SQLAlchemy** for database access
+- A production-ready rotating-file logger setup
+- Solutions for Windows-specific Celery issues ([WinError 6])
+- Clean code practices: type hints, enums, and consistent status codes
 
 ## Prerequisites
-- Python 3.8+
-- Redis - Download from [Microsoft Redis Archive](https://github.com/microsoftarchive/redis/releases) for Windows
-- Virtual environment
-- Packages: `fastapi`, `uvicorn`, `celery`, `redis`, `sqlalchemy`, `pydantic`
+- **Python 3.8+**
+- **Redis** (on Windows, use [Microsoft’s Redis archive](https://github.com/microsoftarchive/redis))
+- **Git** and a **virtualenv**
 
-## Setup Instructions
-
-1. **Clone the Repository**
+## Setup
+1. **Clone & Navigate**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/dillionhuston/Task-Automation-API.git
    cd Task-Automation-API
    ```
 
-2. **Activate Virtual Environment**
+2. **Create & Activate Virtual Environment**
    ```bash
-   python -m venv venv
-   .\venv\Scripts\activate  # Windows; use `source venv/bin/activate` for Linux/Mac
+   python -m venv .venv
+   .\venv\Scripts\activate  # Windows
+   source .venv/bin/activate  # macOS/Linux
    ```
 
 3. **Install Dependencies**
    ```bash
-   pip install fastapi uvicorn celery redis sqlalchemy pydantic
+   pip install -r requirements.txt
    ```
 
 4. **Start Redis**
    ```bash
    redis-server
    ```
-   Verify with `redis-cli ping` (should return `PONG`).
 
 5. **Run FastAPI**
    ```bash
-   fastapi dev main.py
+   uvicorn main:app --reload
    ```
-   Access at `http://localhost:8000`. Use `http://localhost:8000/docs` for interactive API docs. Check health:
-   ```bash
-   curl http://localhost:8000/health
-   ```
-   Expected output: `{"success": 200}`
 
 6. **Start Celery Worker**
    ```bash
    celery -A app.utils.celery_instance.celery_app worker --pool=solo --loglevel=info
    ```
-   Ensures Windows compatibility.
 
 ## Usage
+- Access interactive API docs at `http://localhost:8000/docs`
+- **Register** a user (`POST /register`), then **log in** (`POST /login`) to obtain a Bearer token
+- **Schedule tasks** (`POST /schedule`) with the following fields:
+  - `task_type`: `"file_cleanup"` or `"reminder"`
+  - `schedule_time`: ISO UTC datetime (must be in the future)
+  - `receiver_email`: Required for reminders
+- **List tasks** (`GET /list_tasks`) and **cancel tasks** (`GET /cancel/{task_id}`)
+- **File cleanup**: Deletes files older than 7 days in `uploads/` by default
 
-Use `http://localhost:8000/docs` for most interactions (recommended). Alternatively, use `curl`.
-
-1. **Register**
-   - **Docs**: In `/docs`, use `/register` (POST) with `username` and `password`.
-   - **curl**:
-     ```bash
-     curl -X POST "http://localhost:8000/register" -H "Content-Type: application/json" -d '{"username": "your_username", "password": "your_password"}'
-     ```
-
-2. **Log In**
-   - **Docs**: Use `/login` (POST) to get a token.
-   - **curl**:
-     ```bash
-     curl -X POST "http://localhost:8000/login" -H "Content-Type: application/json" -d '{"username": "your_username", "password": "your_password"}'
-     ```
-
-3. **Schedule a Task**
-   Schedule `file_cleanup` (deletes files older than 7 days in `uploads`) or `reminder` for a future time (UTC, e.g., `2025-08-02T20:00:00Z` for 8:00 PM UTC, after 7:36 PM BST, August 2, 2025).
-   - **Docs**: Use `/schedule` (POST), select `task_type` (`file_cleanup` or `reminder`), set `schedule_time`, and authorize with token.
-   - **curl**:
-     ```bash
-     curl -X POST "http://localhost:8000/schedule" -H "Authorization: Bearer <your_token>" -H "Content-Type: application/json" -d '{"task_type": "file_cleanup", "schedule_time": "2025-08-02T20:00:00Z"}'
-     ```
-   - Ensure `uploads` exists with test files for `file_cleanup`.
-   - **Expected Celery Log**:
-     ```
-     Task app.tasks.tasks.file_cleanup[41bf67a4-8cf3-4b35-9eaf-6d9f4dc5b178] received
-     ```
-
-4. **List/Cancel Tasks**
-   - **List (Docs)**: Use `/list_tasks` (GET) with token.
-   - **List (curl)**:
-     ```bash
-     curl -X GET "http://localhost:8000/list_tasks" -H "Authorization: Bearer <your_token>"
-     ```
-   - **Cancel (Docs)**: Use `/cancel/{task_id}` (GET) with token.
-   - **Cancel (curl)**:
-     ```bash
-     curl -X GET "http://localhost:8000/cancel/<task_id>" -H "Authorization: Bearer <your_token>"
-     ```
-
-
-# Enabling Email Reminders for Tasks
-
-To enable email reminders for tasks, follow these steps:
-
-## 1. Add Your Details
-
-Update the `.env` file with your Gmail address and app password. Example:
+### Email Reminders
+Add a `.env` file with:
 ```bash
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password
+EMAIL=your_email@gmail.com
+PASSWORD=your_app_password
 ```
+- Enable 2FA on your Gmail account and create an [app password](https://support.google.com/accounts/answer/185833).
+- Include `receiver_email` when scheduling reminder tasks.
 
-
-## 2. Create an App Password in Google
-
-Since Gmail requires app passwords for third-party apps:
-
-- Go to your [Google Account settings](https://myaccount.google.com/).
-- Enable 2-factor authentication if not already enabled.
-- Navigate to **Security > App passwords**.
-- Generate an app password and use that 16-digit password in the `.env` file.
-
-## 3. Example Reminder
-
-See the image below for a sample email reminder sent by the system:
-
-![Email Reminder Example](reminder_email.png)
-
-## 4. Specify Receiver Email
-
-When scheduling a reminder task, make sure to include the receiver_email in the request payload. For example:
+**Sample Payload:**
 ```json
 {
-  "task_type": "file_cleanup",
-  "schedule_time": "2025-08-04T18:02:11.070Z",
-  "title": "hello",
+  "task_type": "reminder",
+  "schedule_time": "2025-08-10T14:00:00Z",
   "receiver_email": "user@example.com"
 }
 ```
-
-   
 
 ## Project Structure
 ```
 Task-Automation-API/
 ├── app/
-│   ├── auth/
-│   ├── dependencies/
-│   ├── models/
-│   ├── routers/
-│   ├── schemas/
-│   ├── scripts/
-│   ├── tasks/
-│   └── utils/
+│   ├── auth/          # JWT login/refresh routes
+│   ├── dependencies/  # Dependency injection logic
+│   ├── models/        # SQLAlchemy database models
+│   ├── routers/       # File, task, and auth endpoints
+│   ├── schemas/       # Pydantic models & enums
+│   ├── scripts/       # Utility scripts
+│   ├── tasks/         # Celery task implementations
+│   └── utils/         # Logger, email, hashing, Celery setup
 │       ├── __init__.py
 │       ├── config.py
-│       ├── uploads/
-│       └── venv/
-├── .env
-├── .gitignore
-├── initdb.py
-├── main.py
-├── thisfile.markdown
-├── reminder_email.png
-├── requirements.txt
-├── task_automation.db
-└── worker.py
+│       ├── uploads/    # Folder for file cleanup
+│       └── venv/      # Virtual environment folder
+├── .env               # Environment variables
+├── .gitignore         # Git ignore file
+├── initdb.py          # Database initialization script
+├── main.py            # FastAPI application entry point
+├── thisfile.markdown  # Additional documentation
+├── reminder_email.png # Sample reminder email image
+├── requirements.txt   # Project dependencies
+├── task_automation.db # SQLite database
+└── worker.py          # Celery worker configuration
 ```
 
-## Notes
-- **FastAPI Docs**: Use `http://localhost:8000/docs` for easy testing; `curl` is an alternative.
-- **Tasks**:
-  - `file_cleanup`: Deletes files in `uploads` older than 7 days, can be changed.
-  - `reminder`: Assumed for notifications (define in `app/tasks/tasks.py`).
-- **Scheduling**: `schedule_time` must be future-dated (UTC).
-- **Windows**: `--pool=solo` avoids `[WinError 6]` errors.
-- **Portfolio**: Showcases FastAPI, Celery, SQLAlchemy, and debugging skills.
+## Next Steps
+- Write **pytest** suites for endpoints and tasks
+- Dockerize with **Docker Compose** for easy deployment
 
 
-## Future Improvements
-- Validate future `schedule_time`.
-- Implement `reminder` (e.g., email notifications).
-- Add Celery Beat for recurring tasks.
-- Deploy to Render.com.
+Feel free to clone, explore, and open issues or PRs. Thanks for checking it out!
