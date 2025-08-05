@@ -9,6 +9,7 @@ from app.schemas.Tasks import TaskStatus
 from sqlalchemy.orm import Session
 import logging
 
+#TODO crevert to independent logger, as this will spend more time constructing f-strings
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
