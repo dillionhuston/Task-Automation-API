@@ -126,15 +126,14 @@ See the image below for a sample email reminder sent by the system:
 
 ## 4. Specify Receiver Email
 
-When scheduling a reminder task, ensure you specify the receiver's email in the code. Update the `/utils/schedule_task` call as follows:
-
-```python
-db.add(new_task)
-db.commit()
-schedule_reminder(new_task.id, receiver_email="")  # Set this yourself
-db.refresh(new_task)
-
-
+When scheduling a reminder task, make sure to include the receiver_email in the request payload. For example:
+```json
+{
+  "task_type": "file_cleanup",
+  "schedule_time": "2025-08-04T18:02:11.070Z",
+  "title": "hello",
+  "receiver_email": "user@example.com"
+}
 ```
 
    
