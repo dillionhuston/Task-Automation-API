@@ -14,3 +14,4 @@ class User(BaseModel):
         from_attributes = True  
 
 
+__all__ = ["Config", "from_attributes"]

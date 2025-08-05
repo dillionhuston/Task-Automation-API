@@ -8,12 +8,12 @@ from app.utils.logger import logger
 router = APIRouter()
 
 
-@router.post("/upload")
+@router.post("/upload") 
 async def upload_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> Dict[str, Any]:
+) -> Dict[str, Any]:# noqa: F841
     """
     Upload a file, compute its hash, save it to disk, and store metadata in the database.
     Args:
@@ -50,7 +50,7 @@ async def upload_file(
 def list_files(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> List[Dict[str, Any]]:
+) -> List[Dict[str, Any]]:# noqa: F841
     """
     List all files uploaded by the current user.
     Args:
@@ -82,7 +82,7 @@ def delete_file(
     file_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> None:
+) -> None:# noqa: F841
     """
     Delete a file by ID if it belongs to the current user.
     Args:

@@ -19,4 +19,24 @@ from app.auth.auth import hash_password, verify_password, jwt_generate
 from app.dependencies.auth_utils import get_current_user
 
 
-from app.utils.file import compute, save_file, validate_file
+from app.utils.file import compute, save_file
+
+
+
+
+# app/routers/__init__.py
+
+from .auth import register, read_current_user
+from .files import upload_file, list_files, delete_file
+from .tasks import schedule_logic, list_tasks, cancel_task
+
+__all__ = [
+    "register",
+    "read_current_user",
+    "upload_file",
+    "list_files",
+    "delete_file",
+    "schedule_logic",
+    "list_tasks",
+    "cancel_task",
+]

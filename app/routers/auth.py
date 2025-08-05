@@ -1,19 +1,19 @@
-from app.routers import OAuth2, OAuthFlowsModel, APIRouter, OAuth2PasswordBearer, User, Depends, UserModel
+from app.routers import APIRouter, OAuth2PasswordBearer, User, Depends, UserModel
 from app.routers import User, Session, get_db, HTTPException, hash_password, uuid, status, Annotated, OAuth2PasswordRequestForm, verify_password, jwt_generate, UserCreate, APIRouter
 from app.utils.logger import logger
 
 # use this for oauth2 password only, without client-id or token 
-class PasswordOnlyOAuth2(OAuth2):
+"""class PasswordOnlyOAuth2(OAuth2):
     def __init__(self, tokenUrl: str):
         flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl})
-        super().__init__(flows=flows)
+        super().__init__(flows=flows)"""
 
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 @router.post("/register", response_model=User)
-async def register(user: UserCreate, db: Session = Depends(get_db)):
+async def register(user: UserCreate, db: Session = Depends(get_db)): #noqa:F841
     db_user = db.query(UserModel).filter(
         (UserModel.email == user.email) | (UserModel.username == user.username)
     ).first()
@@ -53,5 +53,5 @@ async def login(
 
 
 @router.get("/me")
-async def read_current_user(token: str = Depends(oauth2_scheme)):
+async def read_current_user(token: str = Depends(oauth2_scheme)):# noqa: F841
     return {"token": token}

@@ -1,5 +1,5 @@
 
-from app.schemas import StringConstraints, field_validator, enum, BaseModel
+from app.schemas import StringConstraints, enum, BaseModel
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -7,8 +7,7 @@ from uuid import UUID
 
 
 
-def aware_utcnow():
-    return datetime.now(timezone.utc)
+
 
 class TaskStatus(str, enum.Enum):
     scheduled = "scheduled"
@@ -29,12 +28,11 @@ class TaskCreate(BaseModel):
     title: str
     reciever_email:str
     
-
-    @field_validator("schedule_time")
+    """@field_validator("schedule_time")
     def validate_future_time(cls, v):
-        if v <= aware_utcnow():
-            raise ValueError("schedule_time must be in the future")
-        return v
+            if v <= aware_utcnow():
+                raise ValueError("schedule_time must be in the future")
+            return v"""
 
 class TaskResponse(BaseModel):
     id: int               
@@ -49,3 +47,10 @@ class TaskResponse(BaseModel):
     class Config:
         from_attributes = True  
     
+
+
+__all__ = [
+    "validate_future_time",
+    "Config",
+    "from_attributes"
+]

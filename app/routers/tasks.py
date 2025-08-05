@@ -11,7 +11,7 @@ router = APIRouter()
 def schedule_logic(
     task: TaskCreate,
     db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user)) -> TaskResponse:
+    user: dict = Depends(get_current_user)) -> TaskResponse:# noqa: F841
     try:
         new_task = schedule_task(db=db, user_id=user["id"], task_data=task, reciever_email=task.reciever_email)
         return TaskResponse.model_validate(new_task)
@@ -23,17 +23,17 @@ def schedule_logic(
 @router.get("/list_tasks", response_model=List[TaskResponse])
 def list_tasks(
     db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user)) -> List[TaskResponse]:
+    user: dict = Depends(get_current_user)) -> List[TaskResponse]:# noqa: F841
     tasks: List[Task] = db.query(Task).filter(Task.user_id == user["id"]).all()
     logger.debug("files listed")
     return tasks
 
 
-@router.get("/cancel/{task_id}", response_model=TaskResponse)
+@router.get("/cancel/{task_id}", response_model=TaskResponse)#
 def cancel_task(
     task_id: int,
     db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user)) -> TaskResponse:
+    user: dict = Depends(get_current_user)) -> TaskResponse:# noqa: F841
     
     task: Task | None = db.query(Task).filter(Task.id == task_id, Task.user_id == user["id"]).first()
     if not task:

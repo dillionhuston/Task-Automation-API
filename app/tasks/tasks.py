@@ -93,3 +93,6 @@ def send_reminder(task_id: int, receiver_email: str) -> None:
                 task.status = TaskStatus.failed
                 db.merge(task)
                 db.commit()
+
+
+__all__ = ["shared_task", "send_reminder"]
