@@ -3,6 +3,7 @@ from fastapi import APIRouter, UploadFile, Depends, File, HTTPException, status
 from sqlalchemy.orm import Session
 from app.routers import compute, validate_file, save_file, FileModel, uuid, os
 from app.routers import get_current_user, get_db, User
+from app.utils.logger import logger
 
 router = APIRouter()
 
@@ -21,8 +22,6 @@ async def upload_file(
         user (User): The currently authenticated user.
     Returns:
         dict: Confirmation message and the ID of the uploaded file.
-    Raises:
-        HTTPException: If the file is missing or invalid.
     """
     if not file:
         raise status.HTTP_404_NOT_FOUND
@@ -43,6 +42,7 @@ async def upload_file(
     db.add(new_file)
     db.commit()
     db.refresh(new_file)
+    logger.info(f"new file upload for user: {new_file.user_id}, FILE_ID: {new_file.id}, filepath:{new_file.file_path}")
     return {"message": "File uploaded successfully", "file_id": new_file.id}
 
 
@@ -73,7 +73,8 @@ def list_files(
             for f in files
         ]
     except:
-        raise FileNotFoundError
+        logger.exception(f"no file found in {user.id}")
+        raise FileNotFoundError(f"no files found in {files.file_path}")
 
 
 @router.delete("/delete/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -94,13 +95,16 @@ def delete_file(
     """
     file = db.query(FileModel).filter(FileModel.id == file_id, FileModel.user_id == user.id).first()
     if not file:
-        raise status.HTTP_404_NOT_FOUND
+        logger.exception("no file found")
+        raise status.HTTP_404_NOT_FOUND("file not found")
     try:
         os.remove(file.file_path)
     except FileNotFoundError:
+        logger.exception("file not found, could have been deleted ")
         # File was already deleted from disk; continue
         pass
     except:
         raise status.HTTP_406_NOT_ACCEPTABLE
     db.delete(file)
+    logger.info("file succesfull deleted")
     db.commit()

@@ -1,5 +1,8 @@
 
 """CONTAINS SCHEDULE TASK, NOTHING ELSE """
+
+import os
+import uuid
 from app.tasks.tasks import file_cleanup
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
@@ -9,8 +12,8 @@ from app.utils import get_db
 from app.utils.celery_instance import celery_app
 from datetime import datetime, timedelta
 from app.utils.email import send_completion_email, send_email_task, schedule_reminder
-import os
-import uuid
+from app.utils.logger import logger
+
 
 
 #scheudle task function
@@ -33,6 +36,7 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:st
         title = task_data.title
     )
     db.add(new_task)
+    logger.info(f"new task added{new_task.id}")
     db.commit()
     db.refresh(new_task)
 
@@ -44,7 +48,7 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:st
             args=[str(new_task.id), reciever_email],
             eta=new_task.schedule_time
         )
-        print(f"task sceduled for {task_data.task_type} ID: {new_task.id} for user {new_task.user_id} time: {new_task.schedule_time}")
+        logger.info(f"task sceduled for {task_data.task_type} ID: {new_task.id} for user {new_task.user_id} time: {new_task.schedule_time}")
     
     elif task_data.task_type == TaskType.reminder:
         celery_app.send_task(
@@ -52,7 +56,7 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:st
             args=[str(new_task.id), reciever_email],
             eta=new_task.schedule_time
         )
-        print(f"Task sceduled. ID: {new_task.id} for user {new_task.user_id} at {new_task.schedule_time}")
+        logger.info(f"Task sceduled. ID: {new_task.id} for user {new_task.user_id} at {new_task.schedule_time}")
     return TaskResponse.model_validate(new_task)
 
 

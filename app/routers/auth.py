@@ -1,5 +1,6 @@
 from app.routers import OAuth2, OAuthFlowsModel, APIRouter, OAuth2PasswordBearer, User, Depends, UserModel
 from app.routers import User, Session, get_db, HTTPException, hash_password, uuid, status, Annotated, OAuth2PasswordRequestForm, verify_password, jwt_generate, UserCreate, APIRouter
+from app.utils.logger import logger
 
 # use this for oauth2 password only, without client-id or token 
 class PasswordOnlyOAuth2(OAuth2):
@@ -28,6 +29,8 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
         id=str(uuid.uuid4())
     )
     db.add(db_user)
+    logger.info(f"new user added {db_user.id}")
+
     db.commit()
     db.refresh(db_user)
     return db_user

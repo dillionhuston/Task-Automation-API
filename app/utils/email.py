@@ -7,10 +7,7 @@ from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal
 from app.schemas.Tasks import TaskStatus
 from sqlalchemy.orm import Session
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app.utils.logger import logger
 
 load_dotenv()
 EMAIL_ADDRESS = os.getenv('EMAIL')
@@ -19,6 +16,7 @@ SMTP_PORT = 465
 SMTP_SERVER = "smtp.gmail.com"
 
 if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
+    logger.exception("no email/password in .env")
     raise ValueError("EMAIL or PASSWORD environment variable is missing")
 
 @celery_app.task(name="app.utils.email.")
@@ -57,7 +55,7 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
         with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context) as server:
             try:
                 server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-                print("login successful")
+                logger.info(f"server logged in {EMAIL_ADDRESS}")
                 server.send_message(msg)
                 logger.info(f"Email sent to {receiver_email} for task {task_id} ({email_type})")
             except smtplib.SMTPException as e:
