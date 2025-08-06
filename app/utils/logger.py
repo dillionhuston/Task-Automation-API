@@ -1,22 +1,32 @@
 import logging
-from logging.handlers import RotatingFileHandler
-import sys
+import threading
 
-logger = logging.getLogger("task_automation_api")
-logger.setLevel(logging.DEBUG)
+class SingletonLogger:
+    _instance = None
+    _lock = threading.Lock()
 
-fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-formatter = logging.Formatter(fmt)
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            with cls._lock:
+             if not cls._instance:
+                cls._instance = super().__new__(cls)
+                cls._instance.initialize(*args, **kwargs)
+        return cls._instance
 
-console = logging.StreamHandler(sys.stdout)
-console.setLevel(logging.INFO)
-console.setFormatter(formatter)
+    def initialize(self, level=logging.INFO):
+        self.logger = logging.getLogger("SingletonLogger")
+        self.logger.setLevel(level)
 
-file = RotatingFileHandler("app.log", maxBytes=1_000_000, backupCount=5, encoding="utf-8")
-file.setLevel(logging.DEBUG)
-file.setFormatter(formatter)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter(
+                '%(asctime)s - %(levelname)s - %(message)s'
+            )
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
 
-logger.addHandler(console)
-logger.addHandler(file)
+    def set_level(self, level):
+        self.logger.setLevel(level)
 
-logger.propagate = False
+    def get_logger(self):
+        return self.logger

@@ -5,7 +5,9 @@ import hashlib
 import os
 from datetime import datetime
 from fastapi import UploadFile, HTTPException, status
-from app.utils.logger import logger
+from app.utils.logger import SingletonLogger
+
+logger = SingletonLogger.get_logger()
 
 def compute(file, algorithm: str = "sha256") -> str:
     """

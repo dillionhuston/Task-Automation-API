@@ -1,6 +1,6 @@
 from app.routers import APIRouter, OAuth2PasswordBearer, User, Depends, UserModel
 from app.routers import User, Session, get_db, HTTPException, hash_password, uuid, status, Annotated, OAuth2PasswordRequestForm, verify_password, jwt_generate, UserCreate, APIRouter
-from app.utils.logger import logger
+from app.utils.logger import SingletonLogger
 
 # use this for oauth2 password only, without client-id or token 
 """class PasswordOnlyOAuth2(OAuth2):
@@ -11,9 +11,10 @@ from app.utils.logger import logger
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+logger = SingletonLogger.get_logger()
 
 @router.post("/register", response_model=User)
-async def register(user: UserCreate, db: Session = Depends(get_db)): #noqa:F841
+async def register(user: UserCreate, db: Session = Depends(get_db))->None: #noqa:F841
     db_user = db.query(UserModel).filter(
         (UserModel.email == user.email) | (UserModel.username == user.username)
     ).first()
@@ -40,7 +41,7 @@ async def register(user: UserCreate, db: Session = Depends(get_db)): #noqa:F841
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)]
-):
+)->None:
     user = db.query(UserModel).filter(UserModel.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -53,5 +54,6 @@ async def login(
 
 
 @router.get("/me")
-async def read_current_user(token: str = Depends(oauth2_scheme)):# noqa: F841
+async def read_current_user(token: str = Depends(oauth2_scheme)):# noqa: 
+    """Gets current user"""
     return {"token": token}

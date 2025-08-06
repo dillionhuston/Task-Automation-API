@@ -7,6 +7,9 @@ from app.schemas.Tasks import TaskStatus
 from datetime import datetime, timedelta
 from celery import shared_task
 from app.utils.email import schedule_reminder, send_completion_email
+from app.utils.logger import SingletonLogger 
+
+logger = SingletonLogger.get_logger()
 
 
 @celery_app.task(name="app.tasks.tasks.file_cleanup")

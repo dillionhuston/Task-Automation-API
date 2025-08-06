@@ -3,9 +3,10 @@ from fastapi import APIRouter, UploadFile, Depends, File, HTTPException, status
 from sqlalchemy.orm import Session
 from app.routers import compute, validate_file, save_file, FileModel, uuid, os
 from app.routers import get_current_user, get_db, User
-from app.utils.logger import logger
+from app.utils.logger import SingletonLogger
 
 router = APIRouter()
+logger = SingletonLogger.get_logger()
 
 
 @router.post("/upload") 
@@ -15,14 +16,20 @@ async def upload_file(
     user: User = Depends(get_current_user),
 ) -> Dict[str, Any]:# noqa: F841
     """
-    Upload a file, compute its hash, save it to disk, and store metadata in the database.
+    Upload a file: validate, hash, save to disk, and store metadata.
+
     Args:
-        file (UploadFile): The file uploaded by the user.
-        db (Session): Database session dependency.
-        user (User): The currently authenticated user.
+        file (UploadFile): File from client.
+        db (Session): Active DB session.
+        user (User): Authenticated user.
+
     Returns:
-        dict: Confirmation message and the ID of the uploaded file.
-    """
+        dict: Success message and file ID.
+
+    Raises:
+        HTTPException: On validation failure or missing file.
+      """
+
     if not file:
         raise status.HTTP_404_NOT_FOUND
     validate_file(file)
@@ -52,15 +59,18 @@ def list_files(
     db: Session = Depends(get_db),
 ) -> List[Dict[str, Any]]:# noqa: F841
     """
-    List all files uploaded by the current user.
+    List files uploaded by the current user.
+
     Args:
-        user (User): The currently authenticated user.
-        db (Session): Database session dependency.
+        user (User): Authenticated user.
+        db (Session): Active DB session.
+
     Returns:
-        List[dict]: A list of file metadata dictionaries.
+        List[dict]: File metadata (ID, name, path, hash).
+
     Raises:
-        HTTPException: On internal server error during database query.
-    """
+        FileNotFoundError: If DB query fails.
+        """
     try:
         files = db.query(FileModel).filter(FileModel.user_id == user.id).all()
         return [
@@ -84,15 +94,20 @@ def delete_file(
     user: User = Depends(get_current_user),
 ) -> None:# noqa: F841
     """
-    Delete a file by ID if it belongs to the current user.
+    Delete a file by ID if it belongs to the user.
+
     Args:
-        file_id (str): The ID of the file to delete.
-        db (Session): Database session dependency.
-        user (User): The currently authenticated user.
+        file_id (str): Target file's UUID.
+        db (Session): Active DB session.
+        user (User): Authenticated user.
+
+    Returns:
+        None
+
     Raises:
-        HTTPException: If the file is not found or the user is unauthorized.
-        HTTPException: On error deleting the file from disk or database.
+        HTTPException: If file not found or delete fails.
     """
+
     file = db.query(FileModel).filter(FileModel.id == file_id, FileModel.user_id == user.id).first()
     if not file:
         logger.exception("no file found")

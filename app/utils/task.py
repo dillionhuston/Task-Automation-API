@@ -12,9 +12,14 @@ from app.utils import get_db
 from app.utils.celery_instance import celery_app
 from datetime import datetime, timedelta
 from app.utils.email import send_completion_email, send_email_task, schedule_reminder
-from app.utils.logger import logger
+from app.utils.logger import SingletonLogger
+from app.dependencies.constants import (
+    TASK_TYPE_FILE_CLEANUP,
+    TASK_TYPE_REMINDER,
+    TASK_ID_GENERATOR
+)
 
-
+logger = SingletonLogger().get_logger()
 
 #scheudle task function
 def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:str)->Task:
@@ -29,7 +34,8 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:st
         Task: the created Task instance.
     """
     new_task = Task(
-        user_id = uuid.UUID( user_id),
+        id = TASK_ID_GENERATOR,
+        user_id = uuid.UUID(user_id),
         task_type = task_data.task_type,
         schedule_time = task_data.schedule_time,
         status = TaskStatus.scheduled,
@@ -42,7 +48,7 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:st
 
     from app.tasks.tasks import file_cleanup
 
-    if task_data.task_type == TaskType.file_cleanup:
+    if task_data.task_type == TASK_TYPE_FILE_CLEANUP:
         celery_app.send_task(
             name = "app.tasks.tasks.file_cleanup",
             args=[str(new_task.id), reciever_email],
@@ -50,7 +56,7 @@ def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:st
         )
         logger.info(f"task sceduled for {task_data.task_type} ID: {new_task.id} for user {new_task.user_id} time: {new_task.schedule_time}")
     
-    elif task_data.task_type == TaskType.reminder:
+    elif task_data.task_type == TASK_TYPE_REMINDER:
         celery_app.send_task(
             name = "app.tasks.task.schedule_reminder",
             args=[str(new_task.id), reciever_email],

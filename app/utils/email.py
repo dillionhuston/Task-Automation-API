@@ -7,8 +7,14 @@ from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal
 from app.schemas.Tasks import TaskStatus
 from sqlalchemy.orm import Session
-from app.utils.logger import logger
+from app.utils.logger import SingletonLogger
+from app.dependencies.constants import (
+    TASK_STATUS_SCHEDULED, 
+    TASK_STATUS_CANCELLED, 
+    TASK_TYPE_REMINDER,
+    TASK_STATUS_COMPLETED)
 
+logger = SingletonLogger.get_logger()
 load_dotenv()
 EMAIL_ADDRESS = os.getenv('EMAIL')
 EMAIL_PASSWORD = os.getenv('PASSWORD')
@@ -28,16 +34,15 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
         if not task:
             logger.error(f"Task with ID {task_id} not found")
             return
-        
-        is_reminder = TaskStatus.scheduled
-        is_completed = TaskStatus.completed
+        TASK_TYPE_REMINDER = TaskStatus.scheduled
+        TASK_STATUS_COMPLETED = TaskStatus.completed
         
         msg = EmailMessage()
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = receiver_email
         msg['Subject'] = (
         f"Reminder: Task '{task.title}' Due Soon"
-        if is_reminder
+        if TASK_TYPE_REMINDER
         else  f"Task '{task.title}' completed"
 )
         body = (
@@ -69,7 +74,7 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
         db.close()
 
 def schedule_reminder(task_id: int, receiver_email: str):
-    send_email_task.delay(receiver_email, task_id, email_type=TaskStatus.scheduled)
+    send_email_task.delay(receiver_email, task_id, email_type=TASK_STATUS_SCHEDULED)
 
 def send_completion_email(task_id: int, receiver_email: str):
-    send_email_task.delay(receiver_email, task_id, email_type=TaskStatus.completed)
+    send_email_task.delay(receiver_email, task_id, email_type=TASK_STATUS_COMPLETED)
