@@ -1,27 +1,46 @@
-from app.dependencies import OAuth2PasswordBearer,Depends, jwt, Session, HTTPException, get_db, status, SECRET_KEY, UserModel
+"""Utility functions for authentication and token verification."""
+import jwt
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+
 from app.auth.auth import verify_token
-from jwt import ExpiredSignatureError, InvalidTokenError
+from app.dependencies.constants import HTTP_STATUS_UNAUTHORIZED
+from app.models.database import get_db
+from app.models.user import UserModel
 from app.utils.logger import SingletonLogger
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
-logger = SingletonLogger.get_logger()
+logger = SingletonLogger().get_logger()
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """Gets current user, using token and user in database """
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    """Retrieve the current user based on a JWT token and DB lookup."""
     try:
         payload = verify_token(token)
         user_id = payload.get("sub")
         if user_id is None:
-            logger.error("tried to get current_user, but no user was provided")
-            raise InvalidTokenError("no sub proivided")
-        
-    except InvalidTokenError as e:
-        logger.error(f"invalid token error {e}")
-        raise InvalidTokenError("{e}")
-    
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
-    if user is None:
-        logger.error(f"no user found for user: {user_id}")
-        raise InvalidTokenError(f"no user found nor token associated for {user_id}")
-    return user
+            logger.exception("Attempted to get current user, but no user ID provided in token.")
+            raise HTTPException(
+                status_code=HTTP_STATUS_UNAUTHORIZED,
+                detail="No user_id provided in token"
+            )
+
+        user = db.query(UserModel).filter(UserModel.id == user_id).first()
+        if not user:
+            logger.warning("No user found in database for user ID: %s", user_id)
+            raise HTTPException(
+                status_code=HTTP_STATUS_UNAUTHORIZED,
+                detail=f"Cannot find user in database with user_id: {user_id}"
+            )
+        return user
+
+    except jwt.InvalidTokenError as e: # pylint: disable=no-member
+        logger.exception("Token verification failed")
+        raise HTTPException(
+            status_code=HTTP_STATUS_UNAUTHORIZED,
+            detail="Token verification failed"
+        ) from e

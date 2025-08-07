@@ -4,10 +4,17 @@ from sqlalchemy.orm import Session
 from app.routers import compute, validate_file, save_file, FileModel, uuid, os
 from app.routers import get_current_user, get_db, User
 from app.utils.logger import SingletonLogger
+from app.dependencies.constants import( 
+    JSON_USER_ID,
+    HTTP_STATUS_BAD_REQUEST,
+    FILE_STORAGE_DIR,
+    HTTP_STATUS_NOT_FOUND,
+    HTTP_STATUS_NOT_APPLICABLE
+
+)
 
 router = APIRouter()
-logger = SingletonLogger.get_logger()
-
+logger = SingletonLogger().get_logger()
 
 @router.post("/upload") 
 async def upload_file(
@@ -17,31 +24,30 @@ async def upload_file(
 ) -> Dict[str, Any]:# noqa: F841
     """
     Upload a file: validate, hash, save to disk, and store metadata.
-
     Args:
         file (UploadFile): File from client.
         db (Session): Active DB session.
         user (User): Authenticated user.
-
     Returns:
         dict: Success message and file ID.
-
     Raises:
         HTTPException: On validation failure or missing file.
       """
-
     if not file:
-        raise status.HTTP_404_NOT_FOUND
+        logger.exception("treid to upload file, but nothing provided")
+        raise HTTPException(
+            status_code=HTTP_STATUS_BAD_REQUEST,
+            detail="no file uploaded, or is not a file"
+        )
     validate_file(file)
     
     file_hash = compute(file.file)
     file.file.seek(0)  # Reset file pointer after reading
-
     filename, file_path = save_file(file, user.id)
 
     new_file = FileModel(
         id=str(uuid.uuid4()),
-        user_id=user.id,
+        JSON_USER_ID=user.id,
         filename=filename,
         file_path=file_path,
         file_hash=file_hash,
@@ -83,43 +89,56 @@ def list_files(
             for f in files
         ]
     except:
-        logger.exception(f"no file found in {user.id}")
-        raise FileNotFoundError(f"no files found in {files.file_path}")
+        logger.error(f"No files found in {FILE_STORAGE_DIR} for {user.id}")
+        raise HTTPException(
+            status=HTTP_STATUS_BAD_REQUEST,
+            details=f"File not found in {FILE_STORAGE_DIR}"
+        )
+       
 
 
 @router.delete("/delete/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_file(
     file_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-) -> None:# noqa: F841
+    user: User = Depends(get_current_user),) -> None:# noqa: F841
     """
     Delete a file by ID if it belongs to the user.
-
     Args:
         file_id (str): Target file's UUID.
         db (Session): Active DB session.
         user (User): Authenticated user.
-
     Returns:
         None
-
     Raises:
         HTTPException: If file not found or delete fails.
     """
 
     file = db.query(FileModel).filter(FileModel.id == file_id, FileModel.user_id == user.id).first()
     if not file:
-        logger.exception("no file found")
-        raise status.HTTP_404_NOT_FOUND("file not found")
+        logger.exception(f"Could not find File_ID: {file_id}")
+        raise HTTPException(
+            status_code=HTTP_STATUS_NOT_FOUND,
+            detail = f"File not found with {file_id} "
+        )
+    
     try:
         os.remove(file.file_path)
+        logger.info(f"successfully deleted {file.id}, from {file.user_id} account")
+
     except FileNotFoundError:
         logger.exception("file not found, could have been deleted ")
         # File was already deleted from disk; continue
-        pass
-    except:
-        raise status.HTTP_406_NOT_ACCEPTABLE
+
+    except Exception as e:
+        logger.exception(f"unexpected error deleting file: {file.file_path}")
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Could not delete file from disk"
+        )
+    
     db.delete(file)
-    logger.info("file succesfull deleted")
     db.commit()
+    logger.info(f"Deleted file record from DB for file_id: {file_id}")
+
+    

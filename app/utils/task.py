@@ -1,17 +1,13 @@
+"""
+Contains only the task scheduling function.
+"""
 
-"""CONTAINS SCHEDULE TASK, NOTHING ELSE """
-
-import os
 import uuid
-from app.tasks.tasks import file_cleanup
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.tasks import Task
-from app.schemas.Tasks import TaskCreate, TaskStatus, TaskResponse, TaskType
-from app.utils import get_db
+from app.schemas.Tasks import TaskCreate, TaskStatus, TaskResponse
 from app.utils.celery_instance import celery_app
-from datetime import datetime, timedelta
-from app.utils.email import send_completion_email, send_email_task, schedule_reminder
 from app.utils.logger import SingletonLogger
 from app.dependencies.constants import (
     TASK_TYPE_FILE_CLEANUP,
@@ -21,48 +17,46 @@ from app.dependencies.constants import (
 
 logger = SingletonLogger().get_logger()
 
-#scheudle task function
-def schedule_task(db: Session, user_id, task_data: TaskCreate, reciever_email:str)->Task:
+
+def schedule_task(db: Session, user_id: str, task_data: TaskCreate, receiver_email: str) -> Task:
     """
-    Schedule a new task for a user.
+    Schedule a new Celery task based on type and time.
+
     Args:
-        db (Session): Database session.
-        user_id (str): User's UUID as string.
-        task_data (TaskCreate): Task data payload.
-        reciever_email(str): Reciever email
+        db (Session): Active database session.
+        user_id (str): User's UUID.
+        task_data (TaskCreate): Incoming task data.
+        receiver_email (str): Email to notify after task.
+
     Returns:
-        Task: the created Task instance.
+        Task: The scheduled task, validated as response model.
     """
     new_task = Task(
-        id = TASK_ID_GENERATOR,
-        user_id = uuid.UUID(user_id),
-        task_type = task_data.task_type,
-        schedule_time = task_data.schedule_time,
-        status = TaskStatus.scheduled,
-        title = task_data.title
+        id=TASK_ID_GENERATOR,
+        user_id=uuid.UUID(user_id),
+        task_type=task_data.task_type,
+        schedule_time=task_data.schedule_time,
+        status=TaskStatus.scheduled,
+        title=task_data.title
     )
+
     db.add(new_task)
-    logger.info(f"new task added{new_task.id}")
     db.commit()
     db.refresh(new_task)
-
-    from app.tasks.tasks import file_cleanup
+    logger.info(f"New task scheduled: {new_task.task_type} (ID: {new_task.id}) for user {new_task.user_id} at {new_task.schedule_time}")
 
     if task_data.task_type == TASK_TYPE_FILE_CLEANUP:
         celery_app.send_task(
-            name = "app.tasks.tasks.file_cleanup",
-            args=[str(new_task.id), reciever_email],
+            name="app.tasks.tasks.file_cleanup",
+            args=[str(new_task.id), receiver_email],
             eta=new_task.schedule_time
         )
-        logger.info(f"task sceduled for {task_data.task_type} ID: {new_task.id} for user {new_task.user_id} time: {new_task.schedule_time}")
     
     elif task_data.task_type == TASK_TYPE_REMINDER:
         celery_app.send_task(
-            name = "app.tasks.task.schedule_reminder",
-            args=[str(new_task.id), reciever_email],
+            name="app.tasks.tasks.send_reminder",
+            args=[str(new_task.id), receiver_email],
             eta=new_task.schedule_time
         )
-        logger.info(f"Task sceduled. ID: {new_task.id} for user {new_task.user_id} at {new_task.schedule_time}")
+
     return TaskResponse.model_validate(new_task)
-
-

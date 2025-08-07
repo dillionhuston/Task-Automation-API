@@ -15,6 +15,9 @@ from app.dependencies.constants import (
     ROUTE_CANCEL_TASK,
     TASK_STATUS_CANCELLED,
     HTTP_STATUS_BAD_REQUEST,
+    JSON_USER_ID,
+    JSON_TASK_ID,
+    JSON_STATUS
 )
 
 router = APIRouter()
@@ -30,16 +33,17 @@ def schedule_logic(
     try:
         new_task = schedule_task(
             db=db,
-            user_id=user["id"],
+            JSON_USER_ID=user["id"],
             task_data=task,
             reciever_email=task.reciever_email
         )
         return TaskResponse.model_validate(new_task)
+    
     except Exception as e:
         logger.exception(f"Error in scheduling task: {e}")
         raise HTTPException(
             status_code=HTTP_STATUS_BAD_REQUEST,
-            detail="Invalid task"
+            detail="Invalid task, failed to validate or wrong details"
         )
 
 
@@ -65,9 +69,10 @@ def cancel_task(
     ).first()
 
     if not task:
+        logger.error("")
         raise HTTPException(
             status_code=HTTP_STATUS_BAD_REQUEST,
-            detail="No matching task found or already completed"
+            detail=f"No matching task found with {task_id}  or already completed"
         )
 
     task.status = TASK_STATUS_CANCELLED

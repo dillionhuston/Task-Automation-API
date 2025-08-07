@@ -8,13 +8,13 @@ class SingletonLogger:
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             with cls._lock:
-             if not cls._instance:
-                cls._instance = super().__new__(cls)
-                cls._instance.initialize(*args, **kwargs)
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+                    cls._instance.initialize(*args, **kwargs)
         return cls._instance
 
-    def initialize(self, level=logging.INFO):
-        self.logger = logging.getLogger("SingletonLogger")
+    def initialize(self, level=logging.INFO, log_name="SingletonLogger"):
+        self.logger = logging.getLogger(log_name)
         self.logger.setLevel(level)
 
         if not self.logger.handlers:
