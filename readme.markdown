@@ -6,12 +6,20 @@ This repository is a task-automation backend built with **FastAPI**, **Celery**,
 
 ## Why This Project
 This project demonstrates:
-- **FastAPI**’s dependency injection and Pydantic models
-- **Celery** for background job processing
-- **SQLAlchemy** for database access
-- A production-ready rotating-file logger setup
-- Solutions for Windows-specific Celery issues ([WinError 6])
-- Clean code practices: type hints, enums, and consistent status codes
+- **FastAPI**’s dependency injection and Pydantic models  
+- **Celery** for background job processing  
+- **SQLAlchemy** for database access  
+- A production-ready rotating-file logger setup  
+- Solutions for Windows-specific Celery issues ([WinError 6])  
+- Clean code practices: type hints, enums, and consistent status codes  
+
+## Best Practices & Code Quality
+- **PEP8–compliant**: Code formatted with `black` and linted by `pylint`.  
+- **Strict typing**: Full use of Pydantic schemas and Python type hints.  
+- **Modular architecture**: Separation of concerns across routers, services, tasks, and utilities.  
+- **Exception handling**: Clear, specific error responses and chained exceptions (`raise … from`).  
+- **Logging**: Thread-safe singleton logger, lazy formatting (`%s`), and rotating file support.  
+- **CI/CD ready**: Easy integration with GitHub Actions for linting, formatting, and tests.  
 
 ## Prerequisites
 - **Python 3.8+**
