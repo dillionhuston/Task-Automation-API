@@ -105,32 +105,50 @@ PASSWORD=your_app_password
 - Include \`receiver_email\` when scheduling reminder tasks.  
 
 ---
+# PROJECT STRUCTURE
 
-## Project Structure
-
-\`\`\`text
 Task-Automation-API/
 ├── app/
-│   ├── auth/          # JWT login/refresh routes
-│   ├── dependencies/  # Dependency injection logic
-│   ├── models/        # SQLAlchemy database models
-│   ├── routers/       # File, task, and auth endpoints
-│   ├── schemas/       # Pydantic models & enums
-│   ├── scripts/       # Utility scripts
-│   ├── tasks/         # Celery task implementations
-│   └── utils/         # Logger, email, hashing, Celery setup
-├── .env               # Environment variables
-├── .gitignore         # Git ignore file
-├── initdb.py          # Database initialization script
-├── main.py            # FastAPI application entry point
-├── README.md          # Project documentation
-├── reminder_email.png # Sample reminder email
-├── requirements.txt   # Project dependencies
-├── task_automation.db # SQLite database
-└── worker.py          # Celery worker configuration
-\`\`\`
+│   ├── __init__.py
+│   ├── main.py
+│   ├── auth/                # JWT login/refresh routes
+│   │   ├── __init__.py
+│   │   └── auth.py
+│   ├── routers/             # All FastAPI endpoints
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── files.py
+│   │   └── tasks.py
+│   ├── schemas/             # Pydantic models & enums
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   └── task.py
+│   ├── models/              # SQLAlchemy models & DB
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── file.py
+│   │   └── task.py
+│   ├── dependencies/        # DI & constants
+│   │   ├── __init__.py
+│   │   ├── database.py
+│   │   └── constants.py
+│   ├── tasks/               # Celery task implementations
+│   │   ├── __init__.py
+│   │   └── cleanup.py
+│   ├── utils/               # Helpers: logger, email, file‐ops
+│   │   ├── __init__.py
+│   │   ├── logger.py
+│   │   ├── email.py
+│   │   └── file_ops.py
+│   └── celery_app.py        # Celery instance (instead of utils/__init__)
+├── uploads/                 # Where file‐cleanup runs
+├── .env
+├── .gitignore
+├── initdb.py
+├── requirements.txt
+├── task_automation.db
+└── worker.py
 
----
 
 ## Next Steps
 
