@@ -107,7 +107,7 @@ Task-Automation-API/
 ├── requirements.txt   # Project dependencies
 ├── task_automation.db # SQLite database
 └── worker.py          # Celery worker configuration
-```
+```json
 
 ## Next Steps
 - Write **pytest** suites for endpoints and tasks
