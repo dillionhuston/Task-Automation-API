@@ -88,7 +88,7 @@ PASSWORD=your_app_password
 }
 ```
 
-Task-Automation-API/
+### Task-Automation-API/
 ├── app/
 │   ├── auth/          # JWT login/refresh routes
 │   ├── dependencies/  # Dependency injection logic
