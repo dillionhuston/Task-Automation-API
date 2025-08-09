@@ -110,6 +110,6 @@ Task-Automation-API/
 ## Next Steps
 - Write **pytest** suites for endpoints and tasks
 - Dockerize with **Docker Compose** for easy deployment
-
+- Make available on public network 
 
 Feel free to clone, explore, and open issues or PRs. Thanks for checking it out!
