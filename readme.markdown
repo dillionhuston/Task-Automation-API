@@ -88,8 +88,6 @@ PASSWORD=your_app_password
 }
 ```
 
-## Project Structure
-```
 Task-Automation-API/
 ├── app/
 │   ├── auth/          # JWT login/refresh routes
@@ -100,15 +98,11 @@ Task-Automation-API/
 │   ├── scripts/       # Utility scripts
 │   ├── tasks/         # Celery task implementations
 │   └── utils/         # Logger, email, hashing, Celery setup
-│       ├── __init__.py
-│       ├── config.py
-│       ├── uploads/    # Folder for file cleanup
-│       └── venv/      # Virtual environment folder
 ├── .env               # Environment variables
 ├── .gitignore         # Git ignore file
 ├── initdb.py          # Database initialization script
 ├── main.py            # FastAPI application entry point
-├── thisfile.markdown  # Additional documentation
+├── README.md          # Project documentation
 ├── reminder_email.png # Sample reminder email image
 ├── requirements.txt   # Project dependencies
 ├── task_automation.db # SQLite database
