@@ -1,3 +1,7 @@
+"""
+Module for file handling utilities: hashing, saving, and validation.
+"""
+
 import hashlib
 import os
 from datetime import datetime
@@ -6,6 +10,7 @@ from app.utils.logger import SingletonLogger
 from app.dependencies.constants import MAX_UPLOAD_SIZE_MB, FILE_STORAGE_DIR
 
 logger = SingletonLogger().get_logger()
+
 
 def compute(file, algorithm: str = "sha256") -> str:
     """
@@ -23,12 +28,13 @@ def compute(file, algorithm: str = "sha256") -> str:
         while chunk := file.read(8192):
             hasher.update(chunk)
         return hasher.hexdigest()
-    except Exception as e:
-        logger.exception(f"Error computing file hash: {e}")
+    except Exception as exc:
+        logger.exception("Error computing file hash: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to compute file hash."
-        )
+            detail="Failed to compute file hash.",
+        ) from exc
+
 
 def save_file(file: UploadFile, user_id: str) -> tuple[str, str]:
     """
@@ -42,7 +48,7 @@ def save_file(file: UploadFile, user_id: str) -> tuple[str, str]:
         tuple[str, str]: (Saved filename, full path)
     """
     try:
-        filename = f"{user_id}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_{file.filename}"
+        filename = f"{user_id}_{datetime.now():%Y-%m-%d_%H-%M-%S}_{file.filename}"
         os.makedirs(FILE_STORAGE_DIR, exist_ok=True)
         file_path = os.path.join(FILE_STORAGE_DIR, filename)
 
@@ -50,15 +56,16 @@ def save_file(file: UploadFile, user_id: str) -> tuple[str, str]:
             contents = file.file.read()
             f.write(contents)
 
-        logger.info(f"File saved: {filename} at {file_path}")
+        logger.info("File saved: %s at %s", filename, file_path)
         return filename, file_path
 
-    except Exception as e:
-        logger.exception(f"Error saving file: {e}")
+    except Exception as exc:
+        logger.exception("Error saving file: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to save uploaded file."
-        )
+            detail="Failed to save uploaded file.",
+        ) from exc
+
 
 def validate_file(file: UploadFile) -> None:
     """
@@ -77,14 +84,14 @@ def validate_file(file: UploadFile) -> None:
 
         size_mb = size_bytes / (1024 * 1024)
         if size_mb > MAX_UPLOAD_SIZE_MB:
-            logger.warning(f"Upload rejected: file too large ({size_mb:.2f} MB)")
+            logger.warning("Upload rejected: file too large (%.2f MB)", size_mb)
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=f"File exceeds max allowed size of {MAX_UPLOAD_SIZE_MB} MB"
+                detail=f"File exceeds max allowed size of {MAX_UPLOAD_SIZE_MB} MB",
             )
-    except Exception as e:
-        logger.exception(f"Error validating file size: {e}")
+    except Exception as exc:
+        logger.exception("Error validating file size: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to validate file size."
-        )
+            detail="Failed to validate file size.",
+        ) from exc

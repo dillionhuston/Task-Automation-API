@@ -1,23 +1,28 @@
+"""
+Module for handling email notifications with Celery tasks.
+Includes reminder and completion email functionality.
+"""
+
 import smtplib
 import ssl
 import os
 from email.message import EmailMessage
+
 from dotenv import load_dotenv
+from sqlalchemy.orm import Session
+
 from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal
-from app.schemas.Tasks import TaskStatus
-from sqlalchemy.orm import Session
 from app.utils.logger import SingletonLogger
 from app.dependencies.constants import (
     TASK_STATUS_SCHEDULED,
     TASK_STATUS_COMPLETED,
     TASK_STATUS_FAILED,
-    TASK_TYPE_REMINDER
 )
 
 logger = SingletonLogger().get_logger()
 
-# Load and check environment
+# Load and check environment variables
 load_dotenv()
 EMAIL_ADDRESS = os.getenv('EMAIL')
 EMAIL_PASSWORD = os.getenv('PASSWORD')
@@ -28,18 +33,21 @@ if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
     logger.critical("EMAIL or PASSWORD environment variable is missing")
     raise ValueError("Missing EMAIL or PASSWORD in .env file")
 
+
 @celery_app.task(name="app.utils.email.send_email_task")
 def send_email_task(receiver_email: str, task_id: int, email_type: str):
     """
     Celery task to send reminder or completion emails.
     """
+    from app.models.tasks import Task  
+
     db: Session = SessionLocal()
+    task = None
     try:
-        from app.models.tasks import Task  # local import to avoid circular deps
         task = db.query(Task).filter(Task.id == task_id).first()
 
         if not task:
-            logger.error(f"Task with ID {task_id} not found")
+            logger.error("Task with ID %d not found", task_id)
             return
 
         db.commit()
@@ -55,7 +63,8 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
 
         body = (
             f"Dear User,\n\n"
-            f"This is a {'reminder' if email_type == TASK_STATUS_SCHEDULED else 'confirmation'} for your task '{task.title}'.\n"
+            f"This is a {'reminder' if email_type == TASK_STATUS_SCHEDULED else 'confirmation'} "
+            f"for your task '{task.title}'.\n"
             f"- Task ID: {task.id}\n"
             f"- Due Date: {task.schedule_time}\n"
             f"- Status: {task.status}\n\n"
@@ -67,17 +76,20 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
         with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context) as server:
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             server.send_message(msg)
-            logger.info(f"Email sent to {receiver_email} for task {task_id} ({email_type})")
+            logger.info(
+                "Email sent to %s for task %d (%s)", 
+                receiver_email, task_id, email_type
+            )
 
     except smtplib.SMTPException as smtp_err:
-        logger.error(f"SMTP error while sending email to {receiver_email}: {smtp_err}")
+        logger.error("SMTP error while sending email to %s: %s", receiver_email, smtp_err)
         if task:
             task.status = TASK_STATUS_FAILED
             db.commit()
         raise
 
-    except Exception as e:
-        logger.exception(f"Unhandled error in send_email_task: {e}")
+    except Exception as exc:
+        logger.exception("Unhandled error in send_email_task: %s", exc)
         if task:
             task.status = TASK_STATUS_FAILED
             db.commit()
@@ -86,8 +98,12 @@ def send_email_task(receiver_email: str, task_id: int, email_type: str):
     finally:
         db.close()
 
+
 def schedule_reminder(task_id: int, receiver_email: str):
+    """Schedule an email reminder for the specified task."""
     send_email_task.delay(receiver_email, task_id, email_type=TASK_STATUS_SCHEDULED)
 
+
 def send_completion_email(task_id: int, receiver_email: str):
+    """Send a completion notification email for the specified task."""
     send_email_task.delay(receiver_email, task_id, email_type=TASK_STATUS_COMPLETED)

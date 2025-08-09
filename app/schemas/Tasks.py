@@ -1,15 +1,22 @@
+"""
+Schemas for task-related data models and validation.
+"""
 
-from app.schemas import StringConstraints, enum, BaseModel
-import uuid
 from datetime import datetime, timezone
-from typing import Optional
 from uuid import UUID
+from enum import Enum
+
+from pydantic import BaseModel, field_validator
 
 
+def aware_utcnow() -> datetime:
+    """Return current UTC time with timezone awareness."""
+    return datetime.now(timezone.utc)
 
 
-
-class TaskStatus(str, enum.Enum):
+# pylint: disable=invalid-name
+class TaskStatus(str, Enum):
+    """Enum for task statuses."""
     scheduled = "scheduled"
     completed = "completed"
     running = "running"
@@ -17,40 +24,48 @@ class TaskStatus(str, enum.Enum):
     failed = "failed"
 
 
-class TaskType(str, enum.Enum):
-    reminder =  "reminder"
+# pylint: disable=invalid-name
+class TaskType(str, Enum):
+    """Enum for task types."""
+    reminder = "reminder"
     file_cleanup = "file_cleanup"
-    
 
+
+# pylint: disable=too-few-public-methods
 class TaskCreate(BaseModel):
+    """Schema for creating a task."""
     task_type: TaskType
     schedule_time: datetime
     title: str
-    reciever_email:str
-    
-    """@field_validator("schedule_time")
-    def validate_future_time(cls, v):
-            if v <= aware_utcnow():
-                raise ValueError("schedule_time must be in the future")
-            return v"""
+    receiver_email: str
 
+    @field_validator("schedule_time")
+    @classmethod
+    def validate_future_time(cls, v: datetime) -> datetime:
+        """Ensure schedule_time is in the future."""
+        if v <= aware_utcnow():
+            raise ValueError("schedule_time must be in the future")
+        return v
+
+
+# pylint: disable=too-few-public-methods
 class TaskResponse(BaseModel):
-    id: int               
-    user_id: UUID         
-    task_type: str       
+    """Schema for task response."""
+    id: int
+    user_id: UUID
+    task_type: str
     schedule_time: datetime
-    status: str          
+    status: str
     title: str
 
-            
-
     class Config:
-        from_attributes = True  
-    
+        """Pydantic config to allow attribute access."""
+        from_attributes = True
 
 
 __all__ = [
-    "validate_future_time",
-    "Config",
-    "from_attributes"
+    "TaskStatus",
+    "TaskType",
+    "TaskCreate",
+    "TaskResponse",
 ]
