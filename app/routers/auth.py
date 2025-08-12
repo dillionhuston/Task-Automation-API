@@ -20,9 +20,13 @@ from app.utils.logger import SingletonLogger
 
 
 router = APIRouter()
+<<<<<<< Updated upstream
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 logger = SingletonLogger().get_logger()
 
+=======
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+>>>>>>> Stashed changes
 
 @router.post("/register", response_model=User)
 async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
