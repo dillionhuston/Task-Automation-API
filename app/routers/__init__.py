@@ -10,9 +10,9 @@ from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security.oauth2 import OAuth2
 from sqlalchemy.orm import Session
 
-from app.schemas.user import UserCreate, User
-from app.schemas.file import File as FileSchema
-from app.schemas.tasks import TaskCreate
+from app.schemas.User import UserCreate, User
+from app.schemas.File import File as FileSchema
+from app.schemas.Tasks import TaskCreate
 
 from app.models.user import UserModel
 from app.models.file import FileModel

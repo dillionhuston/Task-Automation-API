@@ -1,7 +1,7 @@
 # pylint: disable=too-few-public-methods
 """SQLAlchemy model for users."""
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import relationship
 from app.models.database import Base
 
@@ -13,3 +13,5 @@ class UserModel(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     files = relationship("FileModel", back_populates="user")
+    is_admin = Column(Boolean, default=False)
+
