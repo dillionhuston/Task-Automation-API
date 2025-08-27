@@ -1,4 +1,5 @@
 # Task Automation API
+[![Release](https://img.shields.io/github/v/release/dillionhuston/Task-Automation-API)](https://github.com/dillionhuston/Task-Automation-API/releases)
 
 **Task Automation API** is a robust backend built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**. It empowers users to register, authenticate, and schedule automated tasks like **file cleanup** and **email reminders** at specified future times.
 
