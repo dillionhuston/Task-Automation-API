@@ -9,6 +9,7 @@ from app.dependencies.constants import HTTP_STATUS_UNAUTHORIZED
 from app.models.database import get_db
 from app.models.user import UserModel
 from app.utils.logger import SingletonLogger
+from jwt import ExpiredSignatureError, InvalidSignatureError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 logger = SingletonLogger().get_logger()

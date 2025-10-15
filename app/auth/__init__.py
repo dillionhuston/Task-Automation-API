@@ -1,4 +1,6 @@
 """Authentication module for JWT token creation and verification."""
+
+import jwt 
 import os
 
 import jwt
