@@ -1,6 +1,6 @@
 from app.dependencies import OAuth2PasswordBearer,Depends, jwt, Session, HTTPException, get_db, status, SECRET_KEY, UserModel
 from app.auth.auth import verify_token
-from jwt import ExpiredSignatureError, InvalidTokenError
+from jwt import ExpiredSignatureError, InvalidSignatureError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
