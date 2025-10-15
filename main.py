@@ -25,12 +25,12 @@ except Exception as e:
 
 # --- Dynamic Router Loading ---
 ROUTER_PATHS = {
-   "auth": "routers.auth",
-    "tasks": "routers.tasks",
-    "files": "routers.files",
-    "admin": "routers.admin",
-
+    "auth": "app.routers.auth",
+    "tasks": "app.routers.tasks",
+    "files": "app.routers.files",
+    "admin": "app.routers.admin",
 }
+
 
 loaded_routers = []
 
