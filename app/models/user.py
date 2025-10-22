@@ -15,3 +15,4 @@ class UserModel(Base):
     files = relationship("FileModel", back_populates="user")
     is_admin = Column(Boolean, default=False)
 # change is to uuid 
+    is_admin = Column("is_admin", Boolean)
