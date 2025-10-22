@@ -15,15 +15,16 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: Annotated[str, StringConstraints(min_length=8)]
     username: Annotated[str, StringConstraints(min_length=3, max_length=50)]
-    is_admin: bool = False  # optional, defaults to False
+    id: str  # TODO: Change to UUID in the future
+    is_admin: bool
+
 
 # pylint: disable=too-few-public-methods
 class User(BaseModel):
     """Schema representing a user."""
-    id: str
     username: str
     email: EmailStr
-    is_admin: bool
+    is_admin: Optional[bool] #allows to be none
 
     class Config:
         """Pydantic config to allow attribute access."""

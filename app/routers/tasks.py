@@ -33,12 +33,11 @@ def schedule_logic(
     """
     try:
         new_task = schedule_task(
-        db=db,
-        user_id=getattr(user, "id", user.get("id")),
-        task_data=task,
-        receiver_email=task.receiver_email
+            db=db,
+            user_id=user["id"],
+            task_data=task,
+            receiver_email=task.receiver_email  # fixed spelling here
         )
-    
         new_task = schedule_task(db=db, user_id=user.id, task_data=task, reciever_email=task.reciever_email)
         return TaskResponse.model_validate(new_task)
 

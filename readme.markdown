@@ -1,5 +1,4 @@
 # Task Automation API
-[![Release](https://img.shields.io/github/v/release/dillionhuston/Task-Automation-API)](https://github.com/dillionhuston/Task-Automation-API/releases)
 
 **Task Automation API** is a robust backend built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**. It empowers users to register, authenticate, and schedule automated tasks like **file cleanup** and **email reminders** at specified future times.
 
@@ -95,15 +94,37 @@ PASSWORD=your_app_password
 ```
 Task-Automation-API/
 ├── app/
-│   ├── models/         # Database models
-│   ├── routers/       # API endpoints
-│   ├── schemas/       # Pydantic schemas
-│   ├── tasks/         # Celery tasks (file_cleanup)
-│   ├── utils/         # Celery and scheduling logic
-│   ├── main.py        # FastAPI entry point
-├── uploads/           # Files for file_cleanup (deletes files >7 days old)
-├── venv/             # Virtual environment
-├── README.md         # This file
+│   ├── main.py               # FastAPI app initialization
+│   ├── auth/                 # JWT auth routes and logic
+│   │   └── auth.py
+│   ├── routers/              # API endpoint routers
+│   │   ├── auth.py
+│   │   ├── files.py
+│   │   └── tasks.py
+│   ├── schemas/              # Pydantic models & enums
+│   │   ├── user.py
+│   │   └── task.py
+│   ├── models/               # SQLAlchemy models & DB setup
+│   │   ├── user.py
+│   │   ├── file.py
+│   │   └── task.py
+│   ├── dependencies/         # Dependency injections & constants
+│   │   ├── database.py
+│   │   └── constants.py
+│   ├── tasks/                # Celery task implementations
+│   │   └── cleanup.py
+│   ├── utils/                # Utilities: logger, email, file operations
+│   │   ├── logger.py
+│   │   ├── email.py
+│   │   └── file_ops.py
+│   └── celery_app.py         # Celery app instance
+├── uploads/                  # Target folder for file cleanup
+├── .env                      # Environment variables (email credentials)
+├── requirements.txt
+├── initdb.py                 # DB initialization script
+├── task_automation.db        # SQLite database file
+├── worker.py                 # Celery worker launcher script
+└── README.md
 ```
 
 ## Testing
