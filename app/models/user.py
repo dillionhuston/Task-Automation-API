@@ -14,4 +14,3 @@ class UserModel(Base):
     hashed_password = Column(String)
     files = relationship("FileModel", back_populates="user")
     is_admin = Column(Boolean, default=False)
-# change is to uuid 

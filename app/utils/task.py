@@ -2,7 +2,7 @@
 Contains only the task scheduling function.
 """
 
-import uuid
+from uuid import uuid4
 from sqlalchemy.orm import Session
 from app.models.tasks import Task
 from app.schemas.Tasks import TaskCreate, TaskStatus, TaskResponse
@@ -16,29 +16,20 @@ from app.dependencies.constants import (
 
 logger = SingletonLogger().get_logger()
 
-
-def schedule_task(db: Session, user_id: str, task_data: TaskCreate, receiver_email: str) -> TaskResponse:
-    """
-    Schedule a new Celery task based on type and time.
-
-    Args:
-        db (Session): Active database session.
-        user_id (str): User's UUID.
-        task_data (TaskCreate): Incoming task data.
-        receiver_email (str): Email to notify after task.
-
-    Returns:
-        TaskResponse: The scheduled task, validated as response model.
-    """
+def schedule_task(db, user_id: str, task_data, receiver_email: str):
     new_task = Task(
-        id=TASK_ID_GENERATOR,
-        user_id=uuid.UUID(user_id),
-        task_type=task_data.task_type,
+        id=str(uuid4()),                 
+        user_id=str(user_id),             
+        task_type=task_data.task_type.value,  
         schedule_time=task_data.schedule_time,
-        status=TaskStatus.scheduled,
-        title=task_data.title,
+        status=TaskStatus.scheduled.value,    
+        title=task_data.title
     )
 
+
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
     db.add(new_task)
     db.commit()
     db.refresh(new_task)

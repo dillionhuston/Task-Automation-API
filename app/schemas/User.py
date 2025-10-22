@@ -15,9 +15,8 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: Annotated[str, StringConstraints(min_length=8)]
     username: Annotated[str, StringConstraints(min_length=3, max_length=50)]
-    id: str  # TODO: Change to UUID in the future
-    is_admin: bool
-
+    id: int = 0
+    is_admin: bool = False
 
 # pylint: disable=too-few-public-methods
 class User(BaseModel):

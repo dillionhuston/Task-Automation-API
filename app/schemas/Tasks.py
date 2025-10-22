@@ -43,20 +43,23 @@ class TaskCreate(BaseModel):
     @classmethod
     def validate_future_time(cls, v: datetime) -> datetime:
         """Ensure schedule_time is in the future."""
-        if v <= aware_utcnow():
+        now = datetime.utcnow()  # naive UTC
+        if v.tzinfo is not None:
+            v = v.replace(tzinfo=None)  # drop tzinfo
+        if v <= now:
             raise ValueError("schedule_time must be in the future")
         return v
 
 
 # pylint: disable=too-few-public-methods
 class TaskResponse(BaseModel):
-    """Schema for task response."""
-    id: int
-    user_id: UUID
-    task_type: str
-    schedule_time: datetime
-    status: str
-    title: str
+    class TaskResponse(BaseModel):
+        id: str
+        user_id: str  
+        task_type: str
+        schedule_time: datetime
+        status: str
+        title: str
 
     class Config:
         """Pydantic config to allow attribute access."""
