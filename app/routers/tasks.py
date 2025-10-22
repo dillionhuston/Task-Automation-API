@@ -33,16 +33,12 @@ def schedule_logic(
     """
     try:
         new_task = schedule_task(
-        db=db,
-        user_id=getattr(user, "id", user.get("id")),
-        task_data=task,
-        receiver_email=task.receiver_email
+            db=db,
+            user_id=user["id"],
+            task_data=task,
+            receiver_email=task.receiver_email  # fixed spelling here
         )
-<<<<<<< HEAD
-    
         new_task = schedule_task(db=db, user_id=user.id, task_data=task, reciever_email=task.reciever_email)
-=======
->>>>>>> parent of 013e964 (Add admin CLI and routes; pending admin dashboard, route restriction, and tests)
         return TaskResponse.model_validate(new_task)
 
     except Exception as e:

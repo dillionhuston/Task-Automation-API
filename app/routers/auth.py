@@ -23,10 +23,7 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 logger = SingletonLogger().get_logger()
 
-<<<<<<< HEAD
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
-=======
->>>>>>> parent of 013e964 (Add admin CLI and routes; pending admin dashboard, route restriction, and tests)
 
 @router.post("/register", response_model=User)
 async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
