@@ -5,7 +5,7 @@ Contains only the task scheduling function.
 import uuid
 from sqlalchemy.orm import Session
 from app.models.tasks import Task
-from app.schemas.tasks import TaskCreate, TaskStatus, TaskResponse
+from app.schemas.Tasks import TaskCreate, TaskStatus, TaskResponse
 from app.utils.celery_instance import celery_app
 from app.utils.logger import SingletonLogger
 from app.dependencies.constants import (

@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.models import UserModel
-from app.schemas.user import User, UserCreate  # Adjust if needed
+from app.schemas.User import User, UserCreate  # Adjust if needed
 from app.models.database import get_db
 from app.auth.auth import (
     hash_password,
@@ -20,13 +20,10 @@ from app.utils.logger import SingletonLogger
 
 
 router = APIRouter()
-<<<<<<< Updated upstream
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 logger = SingletonLogger().get_logger()
 
-=======
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
->>>>>>> Stashed changes
 
 @router.post("/register", response_model=User)
 async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
@@ -46,7 +43,8 @@ async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
         username=user.username,
         email=user.email,
         hashed_password=hash_password(user.password),
-        id=str(uuid.uuid4())
+        id=str(uuid.uuid4()),
+        is_admin=user.is_admin
     )
     db.add(db_user)
     logger.info("New user added: %s", db_user.id)

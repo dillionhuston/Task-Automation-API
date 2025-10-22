@@ -1,6 +1,6 @@
 """Utility functions for authentication and token verification."""
 import jwt
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -9,6 +9,7 @@ from app.dependencies.constants import HTTP_STATUS_UNAUTHORIZED
 from app.models.database import get_db
 from app.models.user import UserModel
 from app.utils.logger import SingletonLogger
+from jwt import ExpiredSignatureError, InvalidSignatureError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 logger = SingletonLogger().get_logger()
@@ -44,3 +45,11 @@ async def get_current_user(
             status_code=HTTP_STATUS_UNAUTHORIZED,
             detail="Token verification failed"
         ) from e
+
+
+
+
+def admin_required(current_user: UserModel = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user

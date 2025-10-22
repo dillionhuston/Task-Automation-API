@@ -5,6 +5,7 @@ Singleton logger implementation to provide a consistent logging instance across 
 import logging
 import threading
 
+logger = logging.getLogger(__name__)
 
 class SingletonLogger:
     """
@@ -65,4 +66,6 @@ class SingletonLogger:
         Returns:
             logging.Logger: The singleton logger.
         """
+        if not getattr(self, "_initalized", False):
+            self.initialize()
         return self.logger

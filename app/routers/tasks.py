@@ -7,7 +7,7 @@ from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 
 from app.models.tasks import Task
-from app.schemas.tasks import TaskCreate, TaskResponse
+from app.schemas.Tasks import TaskCreate, TaskResponse
 from app.dependencies.auth_utils import get_current_user
 from app.models.database import get_db
 from app.utils.task import schedule_task
@@ -32,16 +32,14 @@ def schedule_logic(
     Schedule a new task for the authenticated user.
     """
     try:
-<<<<<<< Updated upstream
         new_task = schedule_task(
-            db=db,
-            user_id=user["id"],
-            task_data=task,
-            receiver_email=task.receiver_email  # fixed spelling here
+        db=db,
+        user_id=getattr(user, "id", user.get("id")),
+        task_data=task,
+        receiver_email=task.receiver_email
         )
-=======
+    
         new_task = schedule_task(db=db, user_id=user.id, task_data=task, reciever_email=task.reciever_email)
->>>>>>> Stashed changes
         return TaskResponse.model_validate(new_task)
 
     except Exception as e:
