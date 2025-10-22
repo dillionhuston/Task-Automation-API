@@ -14,9 +14,10 @@ class UserModel(Base):
     hashed_password = Column(String)
     files = relationship("FileModel", back_populates="user")
     is_admin = Column(Boolean, default=False)
-<<<<<<< HEAD
+
 # change is to uuid 
     is_admin = Column("is_admin", Boolean)
-=======
 
->>>>>>> parent of b1d8b80 (Update user.py)
+
+
+
