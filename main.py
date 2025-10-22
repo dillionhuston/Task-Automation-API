@@ -1,7 +1,17 @@
 from fastapi import FastAPI
+<<<<<<< HEAD
 from fastapi.middleware.cors import CORSMiddleware
 import importlib
 import sys
+=======
+from app.routers.auth import router as auth_router
+from app.routers.files import router as file_router
+from app.routers.tasks import router as task_router
+from app.models.database import Base, engine
+from app.models.user import UserModel
+from app.models.tasks import Task
+from app.models.file import FileModel
+>>>>>>> parent of 013e964 (Add admin CLI and routes; pending admin dashboard, route restriction, and tests)
 
 app = FastAPI(title="Task Automation API", version="1.0.0")
 
@@ -32,6 +42,7 @@ ROUTER_PATHS = {
 }
 
 
+<<<<<<< HEAD
 loaded_routers = []
 
 for name, path in ROUTER_PATHS.items():
@@ -53,6 +64,11 @@ def root():
         "docs": "/docs",
         "auth_prefix": "/auth",
     }
+=======
+app.include_router(auth_router)
+app.include_router(file_router)
+app.include_router(task_router)
+>>>>>>> parent of 013e964 (Add admin CLI and routes; pending admin dashboard, route restriction, and tests)
 
 @app.get("/health")
 def health():
