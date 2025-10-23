@@ -7,7 +7,21 @@
 - Tested on Windows with the Celery `solo` pool for compatibility.
 
 ---
+## Client Usage (CLI) Located at /CLIENT/client.py
 
+
+```bash
+# 1. Signup
+python CLIENT/client.py signup --email john@example.com --password pass123 --username john
+
+# 2. Login
+python CLIENT/client.py login --email john@example.com --password pass123
+
+# 3. Reminder (ANY date format)
+python CLIENT/client.py create_task --task_type reminder --schedule_time "tomorrow 7pm" --receiver_email john@example.com --title "Meeting!"
+
+# 4. File Cleanup
+python CLIENT/client.py create_task --task_type file_cleanup --schedule_time "Friday 2am" --title "Clean uploads/"
 ## Why Choose This Project?
 
 - Built with **FastAPI** leveraging dependency injection and Pydantic for data validation  
@@ -15,8 +29,9 @@
 - Robust database layer via **SQLAlchemy** ORM  
 - Production-ready logging with rotating file handlers  
 - Windows-specific Celery issue workarounds (e.g., [WinError 6])  
-- Clean, maintainable code using type hints, enums, and consistent HTTP status codes  
+- Clean, maintainable code using type hints, enums, and consistent HTTP status codes
 
+```
 ---
 
 ## Features & Code Quality
