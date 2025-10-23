@@ -8,8 +8,6 @@
 
 ---
 ## Client Usage (CLI) Located at /CLIENT/client.py
-
-
 ```bash
 # 1. Signup
 python CLIENT/client.py signup --email john@example.com --password pass123 --username john
@@ -22,15 +20,6 @@ python CLIENT/client.py create_task --task_type reminder --schedule_time "tomorr
 
 # 4. File Cleanup
 python CLIENT/client.py create_task --task_type file_cleanup --schedule_time "Friday 2am" --title "Clean uploads/"
-## Why Choose This Project?
-
-- Built with **FastAPI** leveraging dependency injection and Pydantic for data validation  
-- Asynchronous background task execution with **Celery** and **Redis**  
-- Robust database layer via **SQLAlchemy** ORM  
-- Production-ready logging with rotating file handlers  
-- Windows-specific Celery issue workarounds (e.g., [WinError 6])  
-- Clean, maintainable code using type hints, enums, and consistent HTTP status codes
-
 ```
 ---
 
