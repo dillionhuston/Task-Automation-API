@@ -1,6 +1,12 @@
 import requests
+import time
 
 host = 'http://127.0.0.1:8000'
+
+
+# poll server
+
+
 
 def signup(email, password, username):
     data = {"email": email, "password": password, "username": username}
@@ -12,10 +18,12 @@ def login(email, password):
     r = requests.post(f"{host}/login", data=data)
     resp = r.json()
     token = resp.get("access_token")
+
     if not token:
         print("Login failed:", resp)
         return None
     print(f"Token: {token}")
+
     with open("token.txt", "w") as f:
         f.write(token)
     return token
@@ -26,6 +34,7 @@ def create_task(task_type, schedule_time, receiver_email, title):
     try:
         with open("token.txt") as f:
             token = f.read().strip()
+            
     except FileNotFoundError:
         print("Token file not found. Please log in first.")
         return
