@@ -16,10 +16,10 @@ python CLIENT/client.py signup --email john@example.com --password pass123 --use
 python CLIENT/client.py login --email john@example.com --password pass123
 
 # 3. Reminder (ANY date format)
-python CLIENT/client.py create_task --task_type reminder --schedule_time "tomorrow 7pm" --receiver_email john@example.com --title "Meeting!"
+python CLIENT/client.py create_task --task_type reminder --schedule_time "Oct 23 7pm" --receiver_email john@example.com --title "Meeting!"
 
 # 4. File Cleanup
-python CLIENT/client.py create_task --task_type file_cleanup --schedule_time "Friday 2am" --title "Clean uploads/"
+python CLIENT/client.py create_task --task_type file_cleanup --schedule_time "Oct 24 2am" --title "Clean uploads/"
 ```
 ---
 
@@ -58,7 +58,7 @@ pip install -r requirements.txt
 
 redis-server  # Start Redis server
 
-uvicorn app.main:app --reload  # Launch FastAPI server
+uvicorn main:app --reload  # Launch FastAPI server
 
 celery -A worker worker --pool=solo --loglevel=info  # Start Celery worker
 ```
