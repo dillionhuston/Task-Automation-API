@@ -7,16 +7,20 @@
 - Tested on Windows with the Celery `solo` pool for compatibility.
 
 ---
+## Client Usage (CLI) Located at /CLIENT/client.py
+```bash
+# 1. Signup
+python CLIENT/client.py signup --email john@example.com --password pass123 --username john
 
-## Why Choose This Project?
+# 2. Login
+python CLIENT/client.py login --email john@example.com --password pass123
 
-- Built with **FastAPI** leveraging dependency injection and Pydantic for data validation  
-- Asynchronous background task execution with **Celery** and **Redis**  
-- Robust database layer via **SQLAlchemy** ORM  
-- Production-ready logging with rotating file handlers  
-- Windows-specific Celery issue workarounds (e.g., [WinError 6])  
-- Clean, maintainable code using type hints, enums, and consistent HTTP status codes  
+# 3. Reminder (ANY date format)
+python CLIENT/client.py create_task --task_type reminder --schedule_time "Oct 23 7pm" --receiver_email john@example.com --title "Meeting!"
 
+# 4. File Cleanup
+python CLIENT/client.py create_task --task_type file_cleanup --schedule_time "Oct 24 2am" --title "Clean uploads/"
+```
 ---
 
 ## Features & Code Quality
@@ -54,9 +58,9 @@ pip install -r requirements.txt
 
 redis-server  # Start Redis server
 
-uvicorn app.main:app --reload  # Launch FastAPI server
+uvicorn main:app --reload  # Launch FastAPI server
 
-celery -A app.celery_app.celery_app worker --pool=solo --loglevel=info  # Start Celery worker
+celery -A worker worker --pool=solo --loglevel=info  # Start Celery worker
 ```
 
 ## API Usage
@@ -85,48 +89,41 @@ Create a `.env` file with your Gmail credentials:
 ```bash
 EMAIL=your_email@gmail.com
 PASSWORD=your_app_password
+
+**Note:** Enable 2FA and create an app password for secure email sending.  
+You can also refer to the included `.env_example` file for a template of all required environment variables.
 ```
-
-**Note:** Enable 2FA and create an app password for secure email sending.
-
 ## Project Structure
-
-```
+```bash
 Task-Automation-API/
 ├── app/
-│   ├── main.py               # FastAPI app initialization
-│   ├── auth/                 # JWT auth routes and logic
-│   │   └── auth.py
-│   ├── routers/              # API endpoint routers
-│   │   ├── auth.py
-│   │   ├── files.py
-│   │   └── tasks.py
-│   ├── schemas/              # Pydantic models & enums
-│   │   ├── user.py
-│   │   └── task.py
-│   ├── models/               # SQLAlchemy models & DB setup
-│   │   ├── user.py
-│   │   ├── file.py
-│   │   └── task.py
-│   ├── dependencies/         # Dependency injections & constants
-│   │   ├── database.py
-│   │   └── constants.py
-│   ├── tasks/                # Celery task implementations
-│   │   └── cleanup.py
-│   ├── utils/                # Utilities: logger, email, file operations
-│   │   ├── logger.py
-│   │   ├── email.py
-│   │   └── file_ops.py
-│   └── celery_app.py         # Celery app instance
-├── uploads/                  # Target folder for file cleanup
-├── .env                      # Environment variables (email credentials)
-├── requirements.txt
-├── initdb.py                 # DB initialization script
-├── task_automation.db        # SQLite database file
-├── worker.py                 # Celery worker launcher script
-└── README.md
+│ ├── init.py
+│ ├── config.py # Centralized configuration loader (.env, constants)
+│ ├── auth/ # JWT authentication logic
+│ ├── dependencies/ # Database and shared dependencies
+│ ├── models/ # SQLAlchemy models & database setup
+│ ├── routers/ # FastAPI route handlers
+│ ├── schemas/ # Pydantic schemas and enums
+│ ├── scripts/ # Optional scripts or utilities
+│ ├── tasks/ # Celery background task definitions
+│ └── utils/ # Utility modules (logger, email, file ops)
+│
+├── CLIENT/ # Command-line client interface
+│ └── client.py
+│
+├── uploads/ # Target folder for file cleanup
+├── venv/ # Virtual environment (ignored by Git)
+│
+├── .env # Environment variables (email credentials)
+├── .env_example # Example environment configuration
+├── dev.db # Development SQLite database
+├── docker-compose.yml # Docker Compose setup
+├── Dockerfile # Docker build file
+├── initdb.py # Database initialization script
+├── main.py # FastAPI entry point
+├── requirements.txt # Python dependencies
+└── worker.py # Celery worker launcher
 ```
-
 ## Testing
 
 This project uses pytest for testing API endpoints and Celery tasks.
