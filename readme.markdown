@@ -60,7 +60,7 @@ redis-server  # Start Redis server
 
 uvicorn app.main:app --reload  # Launch FastAPI server
 
-celery -A app.celery_app.celery_app worker --pool=solo --loglevel=info  # Start Celery worker
+celery -A worker worker --pool=solo --loglevel=info  # Start Celery worker
 ```
 
 ## API Usage
@@ -89,9 +89,10 @@ Create a `.env` file with your Gmail credentials:
 ```bash
 EMAIL=your_email@gmail.com
 PASSWORD=your_app_password
-```
 
-**Note:** Enable 2FA and create an app password for secure email sending.
+**Note:** Enable 2FA and create an app password for secure email sending.  
+You can also refer to the included `.env_example` file for a template of all required environment variables.
+
 
 ## Project Structure
 
