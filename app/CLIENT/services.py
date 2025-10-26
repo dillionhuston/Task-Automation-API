@@ -31,10 +31,11 @@ def login(email, password):
 
 
 def create_task(task_type, schedule_time, receiver_email, title):
+    print("Creating task")
     try:
-        with open("token.txt") as f:
+        with open(r"C:\Users\amazo\Desktop\Projects\Network_monitor\Task-Automation-API\Task-Automation-API\app\CLIENT\token.txt") as f:
             token = f.read().strip()
-            
+            print("Found token")
     except FileNotFoundError:
         print("Token file not found. Please log in first.")
         return
@@ -47,15 +48,23 @@ def create_task(task_type, schedule_time, receiver_email, title):
         "title": title
     }
 
-    url = f"{host}/schedule"  
-    r = requests.post(url, json=payload, headers=headers)
+    url = f"{host}/schedule"
+
+    try:
+        r = requests.post(url, json=payload, headers=headers, timeout=10)  # 10-second timeout
+    except requests.exceptions.Timeout:
+        print("Request timed out. The server may be down or unreachable.")
+        return
+    except requests.exceptions.RequestException as e:
+        print("Error sending request:", e)
+        return
+
+    try:
+        resp = r.json()
+    except Exception:
+        resp = r.text  # fallback
 
     if r.status_code == 200:
         print("Task scheduled successfully")
     else:
-        try:
-            resp = r.json()
-        except Exception:
-            resp = r.text  # fallback to raw text
         print("Failed to schedule task:", r.status_code, resp)
-

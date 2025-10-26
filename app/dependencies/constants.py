@@ -45,6 +45,6 @@ HTTP_STATUS_SERVER_ERROR = 500
 
 
 # ========== FILE STORAGE ==========
-FILE_STORAGE_DIR = "./uploads"
+FILE_STORAGE_DIR = "C:\\Users\\amazo\\Downloads"
 MAX_UPLOAD_SIZE_MB = 10
 ALLOWED_FILE_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg", "gif"}

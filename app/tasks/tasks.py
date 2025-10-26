@@ -22,6 +22,9 @@ from app.dependencies.constants import (
 logger = SingletonLogger().get_logger()
 
 
+
+# need to execute on client machine not server
+# reverting this to poll server
 @celery_app.task(name="app.tasks.tasks.file_cleanup")
 def file_cleanup(task_id: int, receiver_email: str) -> None:
     """
@@ -71,6 +74,7 @@ def file_cleanup(task_id: int, receiver_email: str) -> None:
                     db.commit()
             except Exception as db_error:  # pylint: disable=broad-exception-caught
                 logger.error(f"Failed to update task status after failure: {db_error}")
+
 
 
 @celery_app.task(name="app.tasks.tasks.send_reminder")

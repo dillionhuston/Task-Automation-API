@@ -8,6 +8,7 @@ from app.models.tasks import Task
 from app.schemas.Tasks import TaskCreate, TaskStatus, TaskResponse
 from app.utils.celery_instance import celery_app
 from app.utils.logger import SingletonLogger
+from app.CLIENT.client_poll_server import poll_server
 from app.dependencies.constants import (
     TASK_TYPE_FILE_CLEANUP,
     TASK_TYPE_REMINDER,
@@ -42,14 +43,13 @@ def schedule_task(db, user_id: str, task_data, receiver_email: str):
         new_task.schedule_time,
     )
 
-    if task_data.task_type == TASK_TYPE_FILE_CLEANUP:
-        celery_app.send_task(
-            name="app.tasks.tasks.file_cleanup",
-            args=[str(new_task.id), receiver_email],
-            eta=new_task.schedule_time,
-        )
 
-    elif task_data.task_type == TASK_TYPE_REMINDER:
+    ## take this part out. need to poll sevrer
+    ###if task_data.task_type == TASK_TYPE_FILE_CLEANUP:
+       ### poll_server()###
+
+        
+    if task_data.task_type == TASK_TYPE_REMINDER:
         celery_app.send_task(
             name="app.tasks.tasks.send_reminder",
             args=[str(new_task.id), receiver_email],

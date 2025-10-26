@@ -12,18 +12,11 @@ from app.routers.admin import router as admin_router
 
 from app.models.database import Base, engine
 
-from CLIENT.client_poll_server import poll_server
 
 Base.metadata.create_all(bind=engine)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    thread = threading.Thread(target=poll_server, daemon=True)
-    thread.start()
-    print("Polling thread started in background.")
-    yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.include_router(auth_router)
 app.include_router(file_router)
