@@ -1,6 +1,7 @@
-# Task Automation API
+# Task Automation API  
 
 **Task Automation API** is a robust backend built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**. It empowers users to register, authenticate, and schedule automated tasks like **file cleanup** and **email reminders** at specified future times.
+
 
 - **File cleanup:** Deletes files older than a configurable threshold from the `uploads/` folder.  
 - **Reminders:** Sends scheduled emails to specified recipients.  
