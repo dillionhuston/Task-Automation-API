@@ -83,11 +83,15 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 
-redis-server  # Start Redis server
+redis-server  # Start Redis server for messages (buggy)
 
 uvicorn main:app --reload  # Launch FastAPI server
 
 celery -A worker worker --pool=solo --loglevel=info  # Start Celery worker
+
+python -m app.CLIENT.client_poll_server
+
+
 ```
 
 ## API Usage
