@@ -11,17 +11,43 @@
 ## Client Usage (CLI) Located at /CLIENT/client.py
 ```bash
 # 1. Signup
-python CLIENT/client.py signup --email john@example.com --password pass123 --username john
+python app/CLIENT/client.py signup --email john@example.com --password pass12334 --username john
 
 # 2. Login
-python CLIENT/client.py login --email john@example.com --password pass123
+python app/CLIENT/client.py login --email john@example.com --password pass12334
 
-# 3. Reminder (ANY date format)
-python CLIENT/client.py create_task --task_type reminder --schedule_time "Oct 23 7pm" --receiver_email john@example.com --title "Meeting!"
+# 3. Create File Cleanup Task (deletes files >7 days old in folder defined in constants.py
+python app/CLIENT/client.py create_task \
+  --task_type file_cleanup \
+  --schedule_time "Oct 27 1:04pm" \
+  --title "Clean uploads/"
 
-# 4. File Cleanup
-python CLIENT/client.py create_task --task_type file_cleanup --schedule_time "Oct 24 2am" --title "Clean uploads/"
+# 4. Create Reminder Task
+python app/CLIENT/client.py create_task \
+  --task_type reminder \
+  --schedule_time "Oct 28 7pm" \
+  --receiver_email "john@example.com" \
+  --title "Team Standup"
+
 ```
+---
+
+## Polling Server
+
+- Run using > ```python python -m app.CLIENT.client_poll_server```
+- Example output
+```json
+- {
+  "id": "27a6884f-4fdf-459e-aaab-f85b6ceb6282",
+  "user_id": "6178d57a-3881-4c68-ac3e-804636e598f6",
+  "task_type": "file_cleanup",
+  "schedule_time": "2025-10-27T13:19:00",
+  "status": "completed",
+  "title": "Clean uploads/"
+}
+```
+-Client will delete files older than 7 days. Folder path has to be provided in 'constants.py
+
 ---
 
 ## Features & Code Quality
@@ -57,11 +83,15 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 
-redis-server  # Start Redis server
+redis-server  # Start Redis server for messages (buggy)
 
 uvicorn main:app --reload  # Launch FastAPI server
 
 celery -A worker worker --pool=solo --loglevel=info  # Start Celery worker
+
+python -m app.CLIENT.client_poll_server
+
+
 ```
 
 ## API Usage
