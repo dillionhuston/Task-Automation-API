@@ -11,16 +11,24 @@
 ## Client Usage (CLI) Located at /CLIENT/client.py
 ```bash
 # 1. Signup
-python CLIENT/client.py signup --email john@example.com --password pass123 --username john
+python app/CLIENT/client.py signup --email john@example.com --password pass12334 --username john
 
 # 2. Login
-python CLIENT/client.py login --email john@example.com --password pass123
+python app/CLIENT/client.py login --email john@example.com --password pass12334
 
-# 3. Reminder (ANY date format)
-python CLIENT/client.py create_task --task_type reminder --schedule_time "Oct 23 7pm" --receiver_email john@example.com --title "Meeting!"
+# 3. Create File Cleanup Task (deletes files >7 days old in folder defined in constants.py
+python app/CLIENT/client.py create_task \
+  --task_type file_cleanup \
+  --schedule_time "Oct 27 1:04pm" \
+  --title "Clean uploads/"
 
-# 4. File Cleanup
-python CLIENT/client.py create_task --task_type file_cleanup --schedule_time "Oct 24 2am" --title "Clean uploads/"
+# 4. Create Reminder Task
+python app/CLIENT/client.py create_task \
+  --task_type reminder \
+  --schedule_time "Oct 28 7pm" \
+  --receiver_email "john@example.com" \
+  --title "Team Standup"
+
 ```
 ---
 
