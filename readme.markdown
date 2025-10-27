@@ -32,6 +32,24 @@ python app/CLIENT/client.py create_task \
 ```
 ---
 
+## Polling Server
+
+- Run using > ```python python -m app.CLIENT.client_poll_server```
+- Example output
+```json
+- {
+  "id": "27a6884f-4fdf-459e-aaab-f85b6ceb6282",
+  "user_id": "6178d57a-3881-4c68-ac3e-804636e598f6",
+  "task_type": "file_cleanup",
+  "schedule_time": "2025-10-27T13:19:00",
+  "status": "completed",
+  "title": "Clean uploads/"
+}
+```
+-Client will delete files older than 7 days. Folder path has to be provided in 'constants.py
+
+---
+
 ## Features & Code Quality
 
 - Fully **PEP8-compliant** with `black` formatting and `pylint` linting  
