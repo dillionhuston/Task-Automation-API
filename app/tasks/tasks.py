@@ -21,12 +21,9 @@ from app.dependencies.constants import (
 
 logger = SingletonLogger().get_logger()
 
-
-
 # need to execute on client machine not server
 # reverting this to poll server
-@celery_app.task(name="app.tasks.tasks.file_cleanup")
-def file_cleanup(task_id: int, receiver_email: str) -> None:
+def file_cleanup(task_id: int) -> None:
     """
     Delete files older than 1 day and update task status.
 
@@ -35,7 +32,6 @@ def file_cleanup(task_id: int, receiver_email: str) -> None:
         receiver_email (str): Email to notify when done.
     """
     task: Optional[Task] = None
-
     try:
         with SessionLocal() as db:
             task = db.query(Task).filter(Task.id == task_id).first()
@@ -61,8 +57,8 @@ def file_cleanup(task_id: int, receiver_email: str) -> None:
             task.status = TASK_STATUS_COMPLETED
             db.commit()
 
-            send_completion_email(task_id, receiver_email)
-            logger.info(f"Sent task completion email to {receiver_email}")
+            #send_completion_email(task_id, receiver_email)
+            #logger.info(f"Sent task completion email to {receiver_email}")
 
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception(f"File cleanup failed for task_id={task_id}: {e}")

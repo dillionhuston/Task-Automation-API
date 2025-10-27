@@ -8,7 +8,6 @@ from app.models.tasks import Task
 from app.schemas.Tasks import TaskCreate, TaskStatus, TaskResponse
 from app.utils.celery_instance import celery_app
 from app.utils.logger import SingletonLogger
-from app.CLIENT.client_poll_server import poll_server
 from app.dependencies.constants import (
     TASK_TYPE_FILE_CLEANUP,
     TASK_TYPE_REMINDER,

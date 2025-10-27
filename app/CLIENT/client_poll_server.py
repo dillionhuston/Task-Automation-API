@@ -1,18 +1,15 @@
 import time
 import requests
 
+from app.tasks.tasks import file_cleanup
+
 host = "http://localhost:8000"
 
-def file_cleanup(task_id):
-    """Placeholder:  cleanup logic here."""
-    print(f"  [EXEC] Running file cleanup for task: {task_id}")
-    time.sleep(1)
-    print(f"  [DONE] Cleanup finished for {task_id}")
 
 
 def poll_server(interval=10):
     try:
-        with open(r"token.txt") as f:
+        with open(r"C:\Users\amazo\Desktop\Projects\Network_monitor\Task-Automation-API\Task-Automation-API\app\CLIENT\token.txt") as f:
             token = f.read().strip()
     except FileNotFoundError:
         print("Could not find token.txt")

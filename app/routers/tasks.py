@@ -1,7 +1,3 @@
-"""
-Task management endpoints for scheduling, listing, and canceling tasks.
-"""
-
 from typing import List
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
@@ -13,19 +9,24 @@ from app.models.database import get_db
 from app.utils.task import schedule_task
 from app.utils.logger import SingletonLogger
 from app.models.user import UserModel
-from app.dependencies.constants import (
-    TASK_STATUS_CANCELLED,
-    HTTP_STATUS_BAD_REQUEST,
-)
+from app.dependencies.constants import TASK_STATUS_CANCELLED, HTTP_STATUS_BAD_REQUEST
 
 router = APIRouter()
-logger = SingletonLogger().get_logger()
+logger = SingletonLogger().get_logger() 
 
-
-@router.post('/schedule', response_model=TaskResponse)
-def schedule_logic(task: TaskCreate, db: Session = Depends(get_db), user: UserModel = Depends(get_current_user)):
+@router.post("/schedule", response_model=TaskResponse)
+def schedule_task_endpoint(
+    task: TaskCreate, 
+    db: Session = Depends(get_db), 
+    user: UserModel = Depends(get_current_user)
+):
     try:
-        new_task = schedule_task(db=db, user_id=str(user.id), task_data=task, receiver_email=task.receiver_email)
+        new_task = schedule_task(
+            db=db, 
+            user_id=str(user.id), 
+            task_data=task, 
+            receiver_email=task.receiver_email
+        )
         return new_task
     except Exception as e:
         logger.exception("Error scheduling task: %s", e)
@@ -34,29 +35,20 @@ def schedule_logic(task: TaskCreate, db: Session = Depends(get_db), user: UserMo
             detail="Invalid task, failed to validate or wrong details"
         ) from e
 
-
-@router.get('/list_tasks', response_model=List[TaskResponse])
-def list_tasks(
+@router.get("/list_tasks", response_model=List[TaskResponse])
+def list_tasks_endpoint(
     db: Session = Depends(get_db),
     user: UserModel = Depends(get_current_user)
-) -> List[TaskResponse]:
-    """
-    List all tasks for the authenticated user.
-    """
-    tasks: List[Task] = db.query(Task).filter(Task.user_id == str(user.id)).all()
-    logger.debug("Tasks listed for user %s", user.id)
-    return tasks
+):
+    tasks = db.query(Task).filter(Task.user_id == str(user.id)).all()
+    return [TaskResponse.model_validate(task) for task in tasks]
 
-
-@router.get('/cancel_task/{task_id}', response_model=TaskResponse)
-def cancel_task(
+@router.get("/cancel_task/{task_id}", response_model=TaskResponse)
+def cancel_task_endpoint(
     task_id: int,
     db: Session = Depends(get_db),
     user: UserModel = Depends(get_current_user)
-) -> TaskResponse:
-    """
-    Cancel a task by task_id if it belongs to the user.
-    """
+):
     task: Task | None = db.query(Task).filter(
         Task.id == task_id,
         Task.user_id == str(user.id)

@@ -28,4 +28,3 @@ class User(BaseModel):
     class Config:
         """Pydantic config to allow attribute access."""
         from_attributes = True
-        orm_mode = True

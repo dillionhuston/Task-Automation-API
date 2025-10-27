@@ -1,4 +1,8 @@
-"""Utility functions for authentication and token verification."""
+"""
+Utility functions for authentication and token verification.
+Safe rewrite: import-friendly, avoids DB or logger issues at startup.
+"""
+
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -10,8 +14,12 @@ from app.models.database import get_db
 from app.models.user import UserModel
 from app.utils.logger import SingletonLogger
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
-logger = SingletonLogger().get_logger()
+# Only create objects that don't hit DB or filesystem at import time
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+
+def get_logger():
+    return SingletonLogger().get_logger()
 
 
 async def get_current_user(
@@ -19,36 +27,44 @@ async def get_current_user(
     db: Session = Depends(get_db)
 ):
     """Retrieve the current user based on a JWT token and DB lookup."""
+
+    logger = get_logger()
+
     try:
         payload = verify_token(token)
         user_id = payload.get("sub")
+
         if user_id is None:
-            logger.exception("Attempted to get current user, but no user ID provided in token.")
+            logger.error("Token missing 'sub' user ID")
             raise HTTPException(
                 status_code=HTTP_STATUS_UNAUTHORIZED,
-                detail="No user_id provided in token"
+                detail="Invalid authentication token",
             )
 
         user = db.query(UserModel).filter(UserModel.id == user_id).first()
+
         if not user:
-            logger.warning("No user found in database for user ID: %s", user_id)
+            logger.warning("User not found in DB for ID %s", user_id)
             raise HTTPException(
                 status_code=HTTP_STATUS_UNAUTHORIZED,
-                detail=f"Cannot find user in database with user_id: {user_id}"
+                detail="User not found or unauthorized",
             )
+
         return user
 
-    except jwt.InvalidTokenError as e: # pylint: disable=no-member
-        logger.exception("Token verification failed")
+    except jwt.InvalidTokenError:
+        logger.error("Invalid token format")
         raise HTTPException(
             status_code=HTTP_STATUS_UNAUTHORIZED,
-            detail="Token verification failed"
-        ) from e
-
-
+            detail="Invalid token",
+        )
 
 
 def admin_required(current_user: UserModel = Depends(get_current_user)):
+    """Ensure user is admin before continuing."""
     if not current_user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
     return current_user

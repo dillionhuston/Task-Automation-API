@@ -10,12 +10,12 @@ host = 'http://127.0.0.1:8000'
 
 def signup(email, password, username):
     data = {"email": email, "password": password, "username": username}
-    r = requests.post(f"{host}/register", json=data)
+    r = requests.post(f"{host}/auth/register", json=data)
     print(r.json())
 
 def login(email, password):
     data = {"username": email, "password": password}  
-    r = requests.post(f"{host}/login", data=data)
+    r = requests.post(f"{host}/auth/login", data=data)
     resp = r.json()
     token = resp.get("access_token")
 

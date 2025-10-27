@@ -25,7 +25,7 @@ from app.utils.file import compute, save_file
 
 from .auth import register, read_current_user
 from .files import upload_file, list_files, delete_file
-from .tasks import schedule_logic, list_tasks, cancel_task
+# from .tasks import schedule_logic, list_tasks, cancel_task
 
 __all__ = [
     "register",
