@@ -23,6 +23,7 @@ def schedule_task(db, user_id: str, task_data, receiver_email: str):
         task_type=task_data.task_type.value,  
         schedule_time=task_data.schedule_time,
         status=TaskStatus.scheduled.value,    
+        receiver_email=receiver_email,
         title=task_data.title
     )
 
@@ -40,6 +41,7 @@ def schedule_task(db, user_id: str, task_data, receiver_email: str):
         new_task.id,
         new_task.user_id,
         new_task.schedule_time,
+        new_task.receiver_email
     )
 
 

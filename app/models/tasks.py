@@ -10,3 +10,4 @@ class Task(Base):
     schedule_time = Column(DateTime, nullable=False, default=taskscheduledefault)
     status = Column(String, default=TASK_STATUS_SCHEDULED)  
     title = Column(String, default="")
+    receiver_email = Column(String, default="")

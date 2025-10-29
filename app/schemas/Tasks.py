@@ -59,6 +59,7 @@ class TaskResponse(BaseModel):
     schedule_time: datetime
     status: str
     title: str
+    receiver_email:str
 
     model_config = {
         "from_attributes": True  # 
