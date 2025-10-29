@@ -6,6 +6,7 @@ host = 'http://127.0.0.1:8000'
 
 # poll server
 
+TOKEN_FILE = r"C:\Users\amazo\Desktop\Projects\Network_monitor\Task-Automation-API\Task-Automation-API\app\CLIENT\token.txt"
 
 
 def signup(email, password, username):
@@ -24,10 +25,11 @@ def login(email, password):
         return None
     print(f"Token: {token}")
 
-    with open("token.txt", "w") as f:
+    # Save token to the same path your client uses
+    with open(TOKEN_FILE, "w") as f:
         f.write(token)
+    print(f"Token saved to {TOKEN_FILE}")
     return token
-
 
 
 def create_task(task_type, schedule_time, receiver_email, title):

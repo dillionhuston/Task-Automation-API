@@ -1,14 +1,16 @@
 # pylint: disable=too-few-public-methods
 """SQLAlchemy model for users."""
 
+import uuid
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import relationship
 from app.models.database import Base
 
 class UserModel(Base):
-    """Usermodel for user accounts"""
+    """User model for user accounts"""
     __tablename__ = "users"
-    id = Column(String, primary_key=True, index=True)
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
