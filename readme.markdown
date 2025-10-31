@@ -43,7 +43,7 @@ celery -A worker worker --pool=solo --loglevel=info
 python -m app.CLIENT.client_poll_server
 ```
 
-## Client Usage (CLI) Located at /CLIENT/client.py
+# CLI client is located at `app/CLIENT/client.py`
 ```bash
 # 1. Signup
 python app/CLIENT/client.py signup --email john@example.com --password pass12334 --username john
