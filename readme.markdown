@@ -1,13 +1,48 @@
-# Task Automation API  
+# Task Automation API
+[![Build Status](https://img.shields.io/github/actions/workflow/status/dillionhuston/Task-Automation-API/ci.yml)](https://github.com/dillionhuston/Task-Automation-API/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
 
-**Task Automation API** is a robust backend built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**. It empowers users to register, authenticate, and schedule automated tasks like **file cleanup** and **email reminders** at specified future times.
-
-
-- **File cleanup:** Deletes files older than a configurable threshold from the `uploads/` folder.  
-- **Reminders:** Sends scheduled emails to specified recipients.  
-- Tested on Windows with the Celery `solo` pool for compatibility.
+**A powerful, modular backend service for scheduling and executing automated tasks** — including **file cleanup** and **email reminders** — built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**.
 
 ---
+
+## 🚀 Features
+
+- **File Cleanup Tasks** — Automatically delete old files from specified directories  
+- **Email Reminders** — Schedule and send email notifications at precise times  
+- **JWT-based Authentication** — Secure `register` and `login` endpoints  
+- **Modular Architecture** — Clean separation: routers, services, tasks, utils  
+- **Thread-Safe Singleton Logger** — Lazy formatting, production-ready logging  
+- **Strong Typing & Validation** — Full Pydantic schema enforcement  
+- **CLI Client** — Interact with the API directly from the terminal  
+- **100% PEP8 Compliant** — Linted, formatted, and ready for production  
+
+---
+
+## ⚡ Quickstart
+```bash
+git clone https://github.com/dillionhuston/Task-Automation-API.git
+cd Task-Automation-API
+python -m venv .venv
+pip install -r requirements.txt
+```
+
+## Start Services
+```bash
+# Terminal 1: Start Redis
+redis-server
+
+# Terminal 2: Launch FastAPI
+uvicorn main:app --reload
+
+# Terminal 3: Start Celery Worker
+celery -A worker worker --pool=solo --loglevel=info
+
+# Terminal 4: Run CLI Client
+python -m app.CLIENT.client_poll_server
+```
+
 ## Client Usage (CLI) Located at /CLIENT/client.py
 ```bash
 # 1. Signup
@@ -32,76 +67,11 @@ python app/CLIENT/client.py create_task \
 ```
 ---
 
-## Polling Server
-
-- Run using > ```python python -m app.CLIENT.client_poll_server```
-- Example output
-```json
-- {
-  "id": "27a6884f-4fdf-459e-aaab-f85b6ceb6282",
-  "user_id": "6178d57a-3881-4c68-ac3e-804636e598f6",
-  "task_type": "file_cleanup",
-  "schedule_time": "2025-10-27T13:19:00",
-  "status": "completed",
-  "title": "Clean uploads/"
-}
-```
--Client will delete files older than 7 days. Folder path has to be provided in 'constants.py
-
----
-
-## Features & Code Quality
-
-- Fully **PEP8-compliant** with `black` formatting and `pylint` linting  
-- Strong typing enforced with Pydantic schemas and Python type hints  
-- Modular architecture separating routers, services, tasks, and utilities  
-- Comprehensive exception handling with meaningful error responses  
-- Thread-safe singleton logger using lazy formatting and rotation  
-- CI/CD friendly for GitHub Actions workflows (lint, format, test)
-
----
-
-## Prerequisites
-
-- Python 3.8+  
-- Redis (Windows users: [Microsoft Redis archive](https://github.com/microsoftarchive/redis))  
-- Git & virtualenv
-
----
-
-## Quick Start
-
-```bash
-git clone https://github.com/dillionhuston/Task-Automation-API.git
-cd Task-Automation-API
-
-python -m venv .venv
-# Windows
-.\.venv\Scripts\activate
-# macOS/Linux
-source .venv/bin/activate
-
-pip install -r requirements.txt
-
-redis-server  # Start Redis server for messages (buggy)
-
-uvicorn main:app --reload  # Launch FastAPI server
-
-celery -A worker worker --pool=solo --loglevel=info  # Start Celery worker
-
-python -m app.CLIENT.client_poll_server
-
-
-```
-
 ## API Usage
-
 Visit Swagger UI: http://localhost:8000/docs
-
 1. **Register**: `POST /register`
 2. **Login**: `POST /login` (receive Bearer token)
 3. **Schedule a task**: `POST /schedule`
-
 ```json
 {
   "task_type": "file_cleanup" | "reminder",
@@ -109,11 +79,10 @@ Visit Swagger UI: http://localhost:8000/docs
   "receiver_email": "user@example.com"  # Required for reminders
 }
 ```
-
 4. **List scheduled tasks**: `GET /list_tasks`
 5. **Cancel a task**: `GET /cancel/{task_id}`
 
-## Email Reminders Setup
+# Email Reminders Setup
 
 Create a `.env` file with your Gmail credentials:
 
@@ -128,65 +97,83 @@ You can also refer to the included `.env_example` file for a template of all req
 ```bash
 Task-Automation-API/
 ├── app/
-│ ├── init.py
-│ ├── config.py # Centralized configuration loader (.env, constants)
-│ ├── auth/ # JWT authentication logic
-│ ├── dependencies/ # Database and shared dependencies
-│ ├── models/ # SQLAlchemy models & database setup
-│ ├── routers/ # FastAPI route handlers
-│ ├── schemas/ # Pydantic schemas and enums
-│ ├── scripts/ # Optional scripts or utilities
-│ ├── tasks/ # Celery background task definitions
-│ └── utils/ # Utility modules (logger, email, file ops)
-│
-├── CLIENT/ # Command-line client interface
-│ └── client.py
-│
-├── uploads/ # Target folder for file cleanup
-├── venv/ # Virtual environment (ignored by Git)
-│
-├── .env # Environment variables (email credentials)
-├── .env_example # Example environment configuration
-├── dev.db # Development SQLite database
-├── docker-compose.yml # Docker Compose setup
-├── Dockerfile # Docker build file
-├── initdb.py # Database initialization script
-├── main.py # FastAPI entry point
-├── requirements.txt # Python dependencies
-└── worker.py # Celery worker launcher
+│   ├── auth/            # JWT authentication
+│   ├── CLIENT/          # Command-line client interface
+│   ├── dependencies/    # Shared dependencies
+│   ├── models/          # SQLAlchemy models
+│   ├── routers/         # FastAPI routes
+│   ├── schemas/         # Pydantic schemas
+│   ├── tasks/           # Celery task definitions
+│   └── utils/           # Logger, email, helpers
+├── uploads/             # Target folder for cleanup
+├── main.py              # FastAPI entry point
+├── worker.py            # Celery worker launcher
+├── .env                 # Environment variables
+├── requirements.txt     # Python dependencies
+├── Dockerfile           # Docker build file
+├── docker-compose.yml   # Docker Compose setup
+└── dev.db               # SQLite development DB
 ```
-## Testing
 
-This project uses pytest for testing API endpoints and Celery tasks.
+## 📄 License
 
-### Running Tests
+```markdown
+MIT License
 
-1. Ensure your virtual environment is activated.
-2. Install test dependencies (if any additional required, else pytest is in your main deps).
-3. Run tests with:
+Copyright (c) 2025 Dillion Huston
 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+```
+## Production Deployment with Docker Compose
+Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
+```yaml
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+
+  worker:
+    build: .
+    container_name: celery_worker
+    command: celery -A main.celery worker --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning```
+```
+## Run 
 ```bash
-pytest
+docker-compose up --build -d
 ```
-
-### Test Coverage
-
-- Tests cover key API endpoints: registration, login, scheduling, listing, and cancellation.
-- Celery task executions (file cleanup and reminders) are tested.
-- Use `pytest -v` for verbose output or integrate with coverage tools for detailed reports.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-If you encounter any problems or have questions, please open an issue on the GitHub repository.
