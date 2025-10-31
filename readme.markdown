@@ -121,12 +121,30 @@ Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
 ```bash
 docker-compose up --build -d
 ```
+
+## Contributing
+
+We welcome contributions! You can help by **reporting bugs**, **suggesting features**, or **submitting pull requests**.  
+
+### How to Contribute
+
+1. **Fork** the repository.  
+2. **Create a branch** for your feature or bugfix:  
+   ```bash
+   git checkout -b feature/my-feature
+    ```
+3. Make your changes and commit with a clear message:
+   ```bash
+      git commit -m "Add feature X"
+   ```
+4.Push your branch to your fork:
+```bash
+git push origin feature/my-feature
+```
+
 ##  License
-
 MIT License
-
 Copyright (c) 2025 Dillion Huston
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
