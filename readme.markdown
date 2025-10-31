@@ -82,8 +82,7 @@ Visit Swagger UI: http://localhost:8000/docs
 4. **List scheduled tasks**: `GET /list_tasks`
 5. **Cancel a task**: `GET /cancel/{task_id}`
 
-# Email Reminders Setup
-
+## Email Reminders Setup
 Create a `.env` file with your Gmail credentials:
 
 ```bash
@@ -115,6 +114,12 @@ Task-Automation-API/
 └── dev.db               # SQLite development DB
 ```
 
+## Production Deployment with Docker Compose
+Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
+## Run 
+```bash
+docker-compose up --build -d
+```
 ## 📄 License
 
 ```markdown
@@ -132,48 +137,4 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-```
-## Production Deployment with Docker Compose
-Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
-```yaml
-version: "3.9"
-
-services:
-  web:
-    build: .
-    container_name: fastapi_app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - redis
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    volumes:
-      - ./uploads:/app/uploads
-      - ./.env:/app/.env
-
-  worker:
-    build: .
-    container_name: celery_worker
-    command: celery -A main.celery worker --loglevel=info
-    depends_on:
-      - redis
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    volumes:
-      - ./uploads:/app/uploads
-      - ./.env:/app/.env
-
-  redis:
-    image: redis:alpine
-    container_name: redis
-    ports:
-      - "6379:6379"
-    command: redis-server --save 60 1 --loglevel warning```
-```
-## Run 
-```bash
-docker-compose up --build -d
 ```
