@@ -1,30 +1,25 @@
 """
-Schemas for user creation and user data models.
+Schemas for user-related data models.
 """
-from app.schemas import StringConstraints, EmailStr, BaseModel, Annotated
-from typing import Optional
 
-from typing import Annotated
-from pydantic import BaseModel, EmailStr
-from app.schemas import StringConstraints
+from pydantic import BaseModel
 
 
-# pylint: disable=too-few-public-methods
 class UserCreate(BaseModel):
-    """Schema for creating a new user."""
-    email: EmailStr
-    password: Annotated[str, StringConstraints(min_length=8)]
-    username: Annotated[str, StringConstraints(min_length=3, max_length=50)]
-    id: int = 0
+    """Schema for creating a user."""
+    username: str
+    email: str
+    password: str
     is_admin: bool = False
 
-# pylint: disable=too-few-public-methods
-class User(BaseModel):
-    """Schema representing a user."""
-    username: str
-    email: EmailStr
-    is_admin: Optional[bool] #allows to be none
 
-    class Config:
-        """Pydantic config to allow attribute access."""
-        from_attributes = True
+class User(BaseModel):
+    """Schema for returning user data."""
+    id: str
+    username: str
+    email: str
+    is_admin: bool
+
+    model_config = {"from_attributes": True}
+
+__all__ = ["UserCreate", "User"]

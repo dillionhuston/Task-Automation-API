@@ -3,9 +3,9 @@ Module for handling email notifications with Celery tasks.
 Includes reminder and completion email functionality.
 """
 
-import smtplib
-import ssl
 import os
+import ssl
+import smtplib
 from email.message import EmailMessage
 
 from dotenv import load_dotenv
@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal
 from app.utils.logger import SingletonLogger
+from app.models.tasks import Task
 from app.dependencies.constants import (
     TASK_STATUS_SCHEDULED,
     TASK_STATUS_COMPLETED,
@@ -22,10 +23,10 @@ from app.dependencies.constants import (
 
 logger = SingletonLogger().get_logger()
 
-# Load and check environment variables
+# Load environment variables
 load_dotenv()
-EMAIL_ADDRESS = os.getenv('EMAIL')
-EMAIL_PASSWORD = os.getenv('PASSWORD')
+EMAIL_ADDRESS = os.getenv("EMAIL")
+EMAIL_PASSWORD = os.getenv("PASSWORD")
 SMTP_PORT = 465
 SMTP_SERVER = "smtp.gmail.com"
 
@@ -34,9 +35,15 @@ if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
     raise ValueError("Missing EMAIL or PASSWORD in .env file")
 
 
-@celery_app.task(name="app.utils.email.send_email_task", bind=True, autoretry_for=(smtplib.SMTPException,), retry_backoff=True, max_retries=3)
+@celery_app.task(
+    name="app.utils.email.send_email_task",
+    bind=True,
+    autoretry_for=(smtplib.SMTPException,),
+    retry_backoff=True,
+    max_retries=3,
+)
 def send_email_task(self, receiver_email: str, task_id: int, email_type: str):
-    from app.models.tasks import Task
+    """Send email for a task, handling reminders and completions."""
     db: Session = SessionLocal()
     task: Task | None = None
 
@@ -53,9 +60,17 @@ def send_email_task(self, receiver_email: str, task_id: int, email_type: str):
             db.commit()
             return "No Email Provided"
 
-        # Build email
-        subject = f"Task '{task.title}' Completed" if email_type == TASK_STATUS_COMPLETED else f"Reminder: Task '{task.title}' Due"
-        body = f"Task ID: {task.id}\nTitle: {task.title}\nStatus: {task.status}\nScheduled: {task.schedule_time}"
+        subject = (
+            f"Task '{task.title}' Completed"
+            if email_type == TASK_STATUS_COMPLETED
+            else f"Reminder: Task '{task.title}' Due"
+        )
+        body = (
+            f"Task ID: {task.id}\n"
+            f"Title: {task.title}\n"
+            f"Status: {task.status}\n"
+            f"Scheduled: {task.schedule_time}"
+        )
 
         msg = EmailMessage()
         msg["From"] = EMAIL_ADDRESS
@@ -70,7 +85,6 @@ def send_email_task(self, receiver_email: str, task_id: int, email_type: str):
 
         logger.info("Email sent to %s for task %d", receiver_email, task_id)
 
-        # Update task status
         task.status = TASK_STATUS_COMPLETED
         db.merge(task)
         db.commit()
@@ -95,10 +109,10 @@ def send_email_task(self, receiver_email: str, task_id: int, email_type: str):
     finally:
         db.close()
 
+
 def schedule_reminder(task_id: int, receiver_email: str):
     """Schedule an email reminder for the specified task."""
     send_email_task.delay(receiver_email, task_id, email_type=TASK_STATUS_SCHEDULED)
-
 
 def send_completion_email(task_id: int, receiver_email: str):
     """Send a completion notification email for the specified task."""

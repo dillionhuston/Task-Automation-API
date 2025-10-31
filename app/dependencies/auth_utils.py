@@ -1,6 +1,6 @@
 """
 Utility functions for authentication and token verification.
-Safe rewrite: import-friendly, avoids DB or logger issues at startup.
+Provides get_current_user and admin_required dependencies.
 """
 
 import jwt
@@ -14,22 +14,25 @@ from app.models.database import get_db
 from app.models.user import UserModel
 from app.utils.logger import SingletonLogger
 
-# Only create objects that don't hit DB or filesystem at import time
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 def get_logger():
+    """Return a singleton logger instance."""
     return SingletonLogger().get_logger()
 
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
-):
-    """Retrieve the current user based on a JWT token and DB lookup."""
-
+) -> UserModel:
+    """
+    Retrieve the current user based on JWT token and DB lookup.
+    
+    Raises:
+        HTTPException: If token is invalid or user not found.
+    """
     logger = get_logger()
-
     try:
         payload = verify_token(token)
         user_id = payload.get("sub")
@@ -38,33 +41,36 @@ async def get_current_user(
             logger.error("Token missing 'sub' user ID")
             raise HTTPException(
                 status_code=HTTP_STATUS_UNAUTHORIZED,
-                detail="Invalid authentication token",
+                detail="Invalid authentication token"
             )
 
         user = db.query(UserModel).filter(UserModel.id == user_id).first()
-
         if not user:
             logger.warning("User not found in DB for ID %s", user_id)
             raise HTTPException(
                 status_code=HTTP_STATUS_UNAUTHORIZED,
-                detail="User not found or unauthorized",
+                detail="User not found or unauthorized"
             )
 
         return user
-
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as exc:
         logger.error("Invalid token format")
         raise HTTPException(
             status_code=HTTP_STATUS_UNAUTHORIZED,
-            detail="Invalid token",
-        )
+            detail="Invalid token"
+        ) from exc
 
 
-def admin_required(current_user: UserModel = Depends(get_current_user)):
-    """Ensure user is admin before continuing."""
+def admin_required(current_user: UserModel = Depends(get_current_user)) -> UserModel:
+    """
+    Ensure the current user has admin privileges.
+    
+    Raises:
+        HTTPException: If user is not admin.
+    """
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required",
+            detail="Admin access required"
         )
     return current_user

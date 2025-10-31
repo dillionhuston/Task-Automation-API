@@ -1,3 +1,8 @@
+"""
+Authentication routes for Task Automation API.
+Provides user registration, login, and token retrieval endpoints.
+"""
+
 import uuid
 from typing import Annotated
 
@@ -6,7 +11,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.models.user import UserModel
-from app.schemas.User import User, UserCreate
+from app.schemas.user import User, UserCreate
 from app.models.database import get_db
 from app.auth.auth import hash_password, verify_password, jwt_generate
 from app.dependencies.constants import HTTP_STATUS_UNAUTHORIZED
@@ -19,6 +24,12 @@ logger = SingletonLogger().get_logger()
 
 @router.post("/register", response_model=User)
 async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
+    """
+    Register a new user.
+
+    Raises:
+        HTTPException: If email or username already exists.
+    """
     db_user = db.query(UserModel).filter(
         (UserModel.email == user.email) | (UserModel.username == user.username)
     ).first()
@@ -36,7 +47,6 @@ async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
         hashed_password=hash_password(user.password),
         is_admin=user.is_admin
     )
-    
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -48,6 +58,12 @@ async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db)
 ):
+    """
+    Authenticate a user and return a JWT token.
+
+    Raises:
+        HTTPException: If credentials are invalid.
+    """
     user = db.query(UserModel).filter(UserModel.email == form_data.username).first()
 
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -63,4 +79,5 @@ async def login(
 
 @router.get("/me")
 async def read_current_user(token: str = Depends(oauth2_scheme)):
+    """Retrieve the current token (for demonstration purposes)."""
     return {"token": token}

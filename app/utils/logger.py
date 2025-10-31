@@ -5,7 +5,6 @@ Singleton logger implementation to provide a consistent logging instance across 
 import logging
 import threading
 
-logger = logging.getLogger(__name__)
 
 class SingletonLogger:
     """
@@ -16,16 +15,15 @@ class SingletonLogger:
 
     _instance = None
     _lock = threading.Lock()
+    _logger: logging.Logger | None = None
+    _initialized: bool = False
 
     def __new__(cls, *args, **kwargs):
-        """
-        Override object creation to ensure singleton behavior.
-        """
-        if not cls._instance:
+        # pylint: disable=unused-argument
+        if cls._instance is None:
             with cls._lock:
-                if not cls._instance:
+                if cls._instance is None:
                     cls._instance = super().__new__(cls)
-                    cls._instance._initialized = False
         return cls._instance
 
     def initialize(self, level=logging.INFO, log_name="SingletonLogger"):
@@ -33,39 +31,32 @@ class SingletonLogger:
         Initialize the logger instance if not already initialized.
 
         Args:
-            level (int): Logging level (default: logging.INFO).
-            log_name (str): Logger name (default: 'SingletonLogger').
+            level (int): Logging level (default: logging.INFO)
+            log_name (str): Logger name (default: 'SingletonLogger')
         """
-        if getattr(self, "_initialized", False):
+        if self._initialized:
             return
-        self.logger = logging.getLogger(log_name)
-        self.logger.setLevel(level)
+        self._logger = logging.getLogger(log_name)
+        self._logger.setLevel(level)
 
-        if not self.logger.handlers:
+        if not self._logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter(
                 "%(asctime)s - %(levelname)s - %(message)s"
             )
             handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+            self._logger.addHandler(handler)
+
         self._initialized = True
 
-    def set_level(self, level):
-        """
-        Set logging level.
+    def set_level(self, level: int):
+        """Set logging level."""
+        if self._logger:
+            self._logger.setLevel(level)
 
-        Args:
-            level (int): New logging level.
-        """
-        self.logger.setLevel(level)
-
-    def get_logger(self):
-        """
-        Get the logger instance.
-
-        Returns:
-            logging.Logger: The singleton logger.
-        """
-        if not getattr(self, "_initalized", False):
+    def get_logger(self) -> logging.Logger:
+        """Get the logger instance."""
+        if not self._initialized:
             self.initialize()
-        return self.logger
+        assert self._logger is not None
+        return self._logger

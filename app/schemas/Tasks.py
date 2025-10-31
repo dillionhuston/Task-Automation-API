@@ -3,9 +3,7 @@ Schemas for task-related data models and validation.
 """
 
 from datetime import datetime, timezone
-from uuid import UUID
 from enum import Enum
-
 from pydantic import BaseModel, field_validator
 
 
@@ -14,24 +12,21 @@ def aware_utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
-# pylint: disable=invalid-name
 class TaskStatus(str, Enum):
-    """Enum for task statuses."""
-    scheduled = "scheduled"
-    completed = "completed"
-    running = "running"
-    canceled = "canceled"
-    failed = "failed"
+    """Enum for task statuses with UPPER_CASE naming style."""
+    SCHEDULED = "scheduled"
+    COMPLETED = "completed"
+    RUNNING = "running"
+    CANCELED = "canceled"
+    FAILED = "failed"
 
 
-# pylint: disable=invalid-name
 class TaskType(str, Enum):
-    """Enum for task types."""
-    reminder = "reminder"
-    file_cleanup = "file_cleanup"
+    """Enum for task types with UPPER_CASE naming style."""
+    REMINDER = "reminder"
+    FILE_CLEANUP = "file_cleanup"
 
 
-# pylint: disable=too-few-public-methods
 class TaskCreate(BaseModel):
     """Schema for creating a task."""
     task_type: TaskType
@@ -43,34 +38,27 @@ class TaskCreate(BaseModel):
     @classmethod
     def validate_future_time(cls, v: datetime) -> datetime:
         """Ensure schedule_time is in the future."""
-        now = datetime.utcnow()  
+        now = datetime.utcnow()
         if v.tzinfo is not None:
-            v = v.replace(tzinfo=None)  
+            v = v.replace(tzinfo=None)
         if v <= now:
             raise ValueError("schedule_time must be in the future")
         return v
 
 
-# pylint: disable=too-few-public-methods
 class TaskResponse(BaseModel):
+    """Schema for returning task data."""
     id: str
     user_id: str
     task_type: str
     schedule_time: datetime
     status: str
     title: str
-    receiver_email:str
+    receiver_email: str
 
     model_config = {
-        "from_attributes": True  # 
+        "from_attributes": True
     }
 
 
-       
-
-__all__ = [
-    "TaskStatus",
-    "TaskType",
-    "TaskCreate",
-    "TaskResponse",
-]
+__all__ = ["TaskStatus", "TaskType", "TaskCreate", "TaskResponse"]

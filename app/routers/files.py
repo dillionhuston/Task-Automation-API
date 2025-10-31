@@ -1,5 +1,6 @@
 """
-File management endpoints: upload, list, delete.
+File management endpoints for Task Automation API.
+Includes upload, list, and delete functionality.
 """
 
 import os
@@ -16,7 +17,6 @@ from app.utils.file import validate_file, save_file, compute
 from app.utils.logger import SingletonLogger
 from app.dependencies.constants import (
     HTTP_STATUS_BAD_REQUEST,
-    FILE_STORAGE_DIR,
     HTTP_STATUS_NOT_FOUND,
 )
 
@@ -28,11 +28,9 @@ logger = SingletonLogger().get_logger()
 async def upload_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    user=Depends(get_current_user),
+    user=Depends(get_current_user)
 ) -> Dict[str, Any]:
-    """
-    Upload a file: validate, hash, save to disk, and store metadata.
-    """
+    """Upload a file: validate, hash, save to disk, and store metadata."""
     if not file:
         logger.exception("Tried to upload file, but nothing provided")
         raise HTTPException(
@@ -42,12 +40,12 @@ async def upload_file(
 
     validate_file(file)
     file_hash = compute(file.file)
-    file.file.seek(0)  
+    file.file.seek(0)
     filename, file_path = save_file(file, user.id)
 
     new_file = FileModel(
         id=str(uuid4()),
-        user_id=user.id,  # fixed attribute name (was JSON_USER_ID)
+        user_id=user.id,
         filename=filename,
         file_path=file_path,
         file_hash=file_hash,
@@ -60,18 +58,15 @@ async def upload_file(
         "New file upload | user: %s | FILE_ID: %s | path: %s",
         new_file.user_id, new_file.id, new_file.file_path
     )
-
     return {"message": "File uploaded successfully", "file_id": new_file.id}
 
 
 @router.get("/list")
 def list_files(
     user=Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ) -> List[Dict[str, Any]]:
-    """
-    List files uploaded by the current user.
-    """
+    """List files uploaded by the current user."""
     try:
         files = db.query(FileModel).filter(FileModel.user_id == user.id).all()
         return [
@@ -84,10 +79,10 @@ def list_files(
             for f in files
         ]
     except Exception as exc:
-        logger.error("No files found in %s for user %s", FILE_STORAGE_DIR, user.id)
+        logger.error("No files found for user %s", user.id)
         raise HTTPException(
             status_code=HTTP_STATUS_BAD_REQUEST,
-            detail=f"File not found in {FILE_STORAGE_DIR}"
+            detail="No files found"
         ) from exc
 
 
@@ -95,11 +90,9 @@ def list_files(
 def delete_file(
     file_id: str,
     db: Session = Depends(get_db),
-    user=Depends(get_current_user),
+    user=Depends(get_current_user)
 ) -> None:
-    """
-    Delete a file by ID if it belongs to the user.
-    """
+    """Delete a file by ID if it belongs to the user."""
     file = db.query(FileModel).filter(
         FileModel.id == file_id, FileModel.user_id == user.id
     ).first()
