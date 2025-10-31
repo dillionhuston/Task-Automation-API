@@ -7,7 +7,7 @@
 
 ---
 
-## 🚀 Features
+##  Features
 
 - **File Cleanup Tasks** — Automatically delete old files from specified directories  
 - **Email Reminders** — Schedule and send email notifications at precise times  
@@ -20,7 +20,7 @@
 
 ---
 
-## ⚡ Quickstart
+##  Quickstart
 ```bash
 git clone https://github.com/dillionhuston/Task-Automation-API.git
 cd Task-Automation-API
@@ -120,9 +120,8 @@ Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
 ```bash
 docker-compose up --build -d
 ```
-## 📄 License
+##  License
 
-```markdown
 MIT License
 
 Copyright (c) 2025 Dillion Huston
@@ -137,4 +136,3 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-```
