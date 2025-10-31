@@ -116,6 +116,7 @@ Task-Automation-API/
 
 ## Production Deployment with Docker Compose
 Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
+- Always make sure docker is running
 ## Run 
 ```bash
 docker-compose up --build -d
