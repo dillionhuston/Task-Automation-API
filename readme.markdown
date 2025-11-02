@@ -6,6 +6,8 @@
 **A powerful, modular backend service for scheduling and executing automated tasks** — including **file cleanup** and **email reminders** — built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**.
 
 ---
+## Description
+**Task Automation API is a backend service I built to automate repetitive tasks such as file cleanup and email reminders. Built with FastAPI, Celery, SQLAlchemy, and Redis, it uses JWT authentication for secure access. The platform allows scheduling, listing, and canceling tasks with a CLI client or API endpoints. I focused on modular architecture, strong typing, and production-ready logging. Tasks are executed reliably in the background, and notifications are sent automatically via email. This project demonstrates my ability to build complex backend systems and handle real-world automation problems.”**
 
 ##  Features
 
