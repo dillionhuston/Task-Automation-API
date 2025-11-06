@@ -128,32 +128,23 @@ You can also refer to the included `.env_example` file for a template of all req
 ```bash
 Task-Automation-API/
 ├── app/
-│ ├── init.py
-│ ├── config.py # Centralized configuration loader (.env, constants)
-│ ├── auth/ # JWT authentication logic
-│ ├── dependencies/ # Database and shared dependencies
-│ ├── models/ # SQLAlchemy models & database setup
-│ ├── routers/ # FastAPI route handlers
-│ ├── schemas/ # Pydantic schemas and enums
-│ ├── scripts/ # Optional scripts or utilities
-│ ├── tasks/ # Celery background task definitions
-│ └── utils/ # Utility modules (logger, email, file ops)
-│
-├── CLIENT/ # Command-line client interface
-│ └── client.py
-│
-├── uploads/ # Target folder for file cleanup
-├── venv/ # Virtual environment (ignored by Git)
-│
-├── .env # Environment variables (email credentials)
-├── .env_example # Example environment configuration
-├── dev.db # Development SQLite database
-├── docker-compose.yml # Docker Compose setup
-├── Dockerfile # Docker build file
-├── initdb.py # Database initialization script
-├── main.py # FastAPI entry point
-├── requirements.txt # Python dependencies
-└── worker.py # Celery worker launcher
+│   ├── auth/            # JWT authentication
+│   ├── CLIENT/          # Command-line client interface
+│   ├── dependencies/    # Shared dependencies
+│   ├── models/          # SQLAlchemy models
+│   ├── routers/         # FastAPI routes
+│   ├── schemas/         # Pydantic schemas
+│   ├── tasks/           # Celery task definitions
+│   └── utils/           # Logger, email, helpers
+├── uploads/             # Target folder for cleanup
+├── main.py              # FastAPI entry point
+├── worker.py            # Celery worker launcher
+├── .env                 # Environment variables
+├── requirements.txt     # Python dependencies
+├── Dockerfile           # Docker build file
+├── docker-compose.yml   # Docker Compose setup
+└── dev.db               # SQLite development DB
+
 ```
 ## Testing
 
