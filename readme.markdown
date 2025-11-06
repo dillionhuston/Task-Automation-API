@@ -1,14 +1,51 @@
-# Task Automation API  
+# Task Automation API
+[![Build Status](https://img.shields.io/github/actions/workflow/status/dillionhuston/Task-Automation-API/ci.yml)](https://github.com/dillionhuston/Task-Automation-API/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
 
-**Task Automation API** is a robust backend built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**. It empowers users to register, authenticate, and schedule automated tasks like **file cleanup** and **email reminders** at specified future times.
-
-
-- **File cleanup:** Deletes files older than a configurable threshold from the `uploads/` folder.  
-- **Reminders:** Sends scheduled emails to specified recipients.  
-- Tested on Windows with the Celery `solo` pool for compatibility.
+**A powerful, modular backend service for scheduling and executing automated tasks** — including **file cleanup** and **email reminders** — built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**.
 
 ---
-## Client Usage (CLI) Located at /CLIENT/client.py
+## Description
+**Task Automation API is a backend service I built to automate repetitive tasks like file cleanup and email reminders. Using FastAPI, Celery, SQLAlchemy, and Redis, it supports secure JWT-based authentication and reliable background task execution. Tasks can be scheduled, listed, and canceled via a CLI client or API endpoints. I focused on modular architecture, strong typing, and production-ready logging. Notifications are sent automatically, demonstrating my ability to build complex backend systems that solve real-world problems.””**
+
+##  Features
+
+- **File Cleanup Tasks** — Automatically delete old files from specified directories  
+- **Email Reminders** — Schedule and send email notifications at precise times  
+- **JWT-based Authentication** — Secure `register` and `login` endpoints  
+- **Modular Architecture** — Clean separation: routers, services, tasks, utils  
+- **Thread-Safe Singleton Logger** — Lazy formatting, production-ready logging  
+- **Strong Typing & Validation** — Full Pydantic schema enforcement  
+- **CLI Client** — Interact with the API directly from the terminal  
+- **100% PEP8 Compliant** — Linted, formatted, and ready for production  
+
+---
+
+##  Quickstart
+```bash
+git clone https://github.com/dillionhuston/Task-Automation-API.git
+cd Task-Automation-API
+python -m venv .venv
+pip install -r requirements.txt
+```
+
+## Start Services
+```bash
+# Terminal 1: Start Redis
+redis-server
+
+# Terminal 2: Launch FastAPI
+uvicorn main:app --reload
+
+# Terminal 3: Start Celery Worker
+celery -A worker worker --pool=solo --loglevel=info
+
+# Terminal 4: Run CLI Client
+python -m app.CLIENT.client_poll_server
+```
+
+# CLI client is located at `app/CLIENT/client.py`
 ```bash
 # 1. Signup
 python app/CLIENT/client.py signup --email john@example.com --password pass12334 --username john
@@ -32,76 +69,11 @@ python app/CLIENT/client.py create_task \
 ```
 ---
 
-## Polling Server
-
-- Run using > ```python python -m app.CLIENT.client_poll_server```
-- Example output
-```json
-- {
-  "id": "27a6884f-4fdf-459e-aaab-f85b6ceb6282",
-  "user_id": "6178d57a-3881-4c68-ac3e-804636e598f6",
-  "task_type": "file_cleanup",
-  "schedule_time": "2025-10-27T13:19:00",
-  "status": "completed",
-  "title": "Clean uploads/"
-}
-```
--Client will delete files older than 7 days. Folder path has to be provided in 'constants.py
-
----
-
-## Features & Code Quality
-
-- Fully **PEP8-compliant** with `black` formatting and `pylint` linting  
-- Strong typing enforced with Pydantic schemas and Python type hints  
-- Modular architecture separating routers, services, tasks, and utilities  
-- Comprehensive exception handling with meaningful error responses  
-- Thread-safe singleton logger using lazy formatting and rotation  
-- CI/CD friendly for GitHub Actions workflows (lint, format, test)
-
----
-
-## Prerequisites
-
-- Python 3.8+  
-- Redis (Windows users: [Microsoft Redis archive](https://github.com/microsoftarchive/redis))  
-- Git & virtualenv
-
----
-
-## Quick Start
-
-```bash
-git clone https://github.com/dillionhuston/Task-Automation-API.git
-cd Task-Automation-API
-
-python -m venv .venv
-# Windows
-.\.venv\Scripts\activate
-# macOS/Linux
-source .venv/bin/activate
-
-pip install -r requirements.txt
-
-redis-server  # Start Redis server for messages (buggy)
-
-uvicorn main:app --reload  # Launch FastAPI server
-
-celery -A worker worker --pool=solo --loglevel=info  # Start Celery worker
-
-python -m app.CLIENT.client_poll_server
-
-
-```
-
 ## API Usage
-
 Visit Swagger UI: http://localhost:8000/docs
-
 1. **Register**: `POST /register`
 2. **Login**: `POST /login` (receive Bearer token)
 3. **Schedule a task**: `POST /schedule`
-
 ```json
 {
   "task_type": "file_cleanup" | "reminder",
@@ -109,12 +81,10 @@ Visit Swagger UI: http://localhost:8000/docs
   "receiver_email": "user@example.com"  # Required for reminders
 }
 ```
-
 4. **List scheduled tasks**: `GET /list_tasks`
 5. **Cancel a task**: `GET /cancel/{task_id}`
 
 ## Email Reminders Setup
-
 Create a `.env` file with your Gmail credentials:
 
 ```bash
@@ -145,39 +115,45 @@ Task-Automation-API/
 ├── docker-compose.yml   # Docker Compose setup
 └── dev.db               # SQLite development DB
 
-```
-## Testing
 
-This project uses pytest for testing API endpoints and Celery tasks.
-
-### Running Tests
-
-1. Ensure your virtual environment is activated.
-2. Install test dependencies (if any additional required, else pytest is in your main deps).
-3. Run tests with:
-
+## Production Deployment with Docker Compose
+Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
+- Always make sure docker is running
+## Run 
 ```bash
-pytest
+docker-compose up --build -d
 ```
-
-### Test Coverage
-
-- Tests cover key API endpoints: registration, login, scheduling, listing, and cancellation.
-- Celery task executions (file cleanup and reminders) are tested.
-- Use `pytest -v` for verbose output or integrate with coverage tools for detailed reports.
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! You can help by **reporting bugs**, **suggesting features**, or **submitting pull requests**.  
 
-## License
+### How to Contribute
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. **Fork** the repository.  
+2. **Create a branch** for your feature or bugfix:  
+   ```bash
+   git checkout -b feature/my-feature
+    ```
+3. Make your changes and commit with a clear message:
+   ```bash
+      git commit -m "Add feature X"
+   ```
+4.Push your branch to your fork:
+```bash
+git push origin feature/my-feature
+```
 
-## Support
+##  License
+MIT License
+Copyright (c) 2025 Dillion Huston
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-If you encounter any problems or have questions, please open an issue on the GitHub repository.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
