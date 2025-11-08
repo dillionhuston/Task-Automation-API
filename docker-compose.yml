@@ -1,29 +1,58 @@
-version: "3.9"
-
+# docker-compose.yml
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: fastapi_app
     ports:
       - "8000:8000"
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=sqlite:////app/dev.db
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+      - ./dev.db:/app/dev.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   worker:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: celery_worker
-    command: celery -A main.celery worker --loglevel=info
+    command: celery -A main.celery worker --loglevel=info --pool=solo
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=sqlite:////app/dev.db
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+      - ./dev.db:/app/dev.db
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
     container_name: redis
     ports:
       - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
