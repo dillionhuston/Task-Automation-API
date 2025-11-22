@@ -1,8 +1,8 @@
 # Dockerfile
 FROM python:3.11-slim AS base
 
-WORKDIR /app
-ENV PYTHONPATH=/app
+WORKDIR /
+ENV PYTHONPATH=/
 
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
