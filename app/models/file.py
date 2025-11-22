@@ -3,7 +3,7 @@
 
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
-from models.database import Base
+from app.models.database import Base
 
 class FileModel(Base):
     """Database of user-uploaded files"""
