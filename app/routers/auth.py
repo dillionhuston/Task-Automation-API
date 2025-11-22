@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from models.user import UserModel
 from app.schemas.user import User, UserCreate
-from app.models.database import get_db
+from models.database import get_db
 from app.auth.auth import hash_password, verify_password, jwt_generate
 from app.dependencies.constants import HTTP_STATUS_UNAUTHORIZED
 from app.utils.logger import SingletonLogger
