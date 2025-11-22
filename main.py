@@ -5,11 +5,11 @@ import time
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from routers.auth import router as auth_router
-from routers.files import router as file_router
-from routers.tasks import router as task_router
-from routers.admin import router as admin_router
-from models.database import Base, engine
+from app.routers.auth import router as auth_router
+from app.routers.files import router as file_router
+from app.routers.tasks import router as task_router
+from app.routers.admin import router as admin_router
+from app.models.database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 
 
