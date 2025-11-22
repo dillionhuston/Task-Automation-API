@@ -15,6 +15,7 @@ from app.utils.task import schedule_task
 from app.utils.logger import SingletonLogger
 from app.models.user import UserModel
 from app.dependencies.constants import TASK_STATUS_CANCELLED, HTTP_STATUS_BAD_REQUEST
+from app.tasks.tasks import celery_app
 
 router = APIRouter()
 logger = SingletonLogger().get_logger()

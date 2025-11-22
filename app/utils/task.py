@@ -8,7 +8,8 @@ from app.models.tasks import Task
 from app.schemas.tasks import TaskCreate, TaskStatus, TaskResponse
 from app.utils.celery_instance import celery_app
 from app.utils.logger import SingletonLogger
-from app.dependencies.constants import TASK_TYPE_REMINDER
+from app.dependencies.constants import TASK_TYPE_REMINDER, TASK_TYPE_FILE_CLEANUP
+from app.tasks.tasks import celery_app
 
 logger = SingletonLogger().get_logger()
 
@@ -55,7 +56,13 @@ def schedule_task(
         celery_app.send_task(
             name="app.tasks.tasks.send_reminder",
             args=[str(new_task.id), receiver_email],
-            eta=new_task.schedule_time,
+            eta=new_task.schedule_time
+    )
+    elif task_data.task_type == TASK_TYPE_FILE_CLEANUP:
+        celery_app.send_task(
+            name="app.tasks.tasks.file_cleanup",
+            args=[str(new_task.id), receiver_email],
+            eta=new_task.schedule_time
         )
 
     return TaskResponse.model_validate(new_task)

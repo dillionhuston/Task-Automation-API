@@ -29,7 +29,7 @@ def log_task_history(db: Session, task_type: str, status: str, details: str):
     db.add(history)
     db.commit()
 
-
+@celery_app.task(name="app.tasks.tasks.file_cleanup")
 def file_cleanup(task_id: int, receiver_email: Optional[str] = None) -> None:
     """
     Delete files older than 1 day and update task status.

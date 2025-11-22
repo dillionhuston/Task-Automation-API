@@ -30,7 +30,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: celery_worker
-    command: celery -A main.celery worker --loglevel=info --pool=solo
+    command: celery -A worker worker --pool=solo --loglevel=info
+
     depends_on:
       redis:
         condition: service_healthy
