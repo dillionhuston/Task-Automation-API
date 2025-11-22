@@ -10,12 +10,12 @@ from typing import List, Dict, Any
 from fastapi import APIRouter, UploadFile, Depends, File, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.dependencies.auth_utils import get_current_user
-from app.models.database import get_db
-from app.models.file import FileModel
-from app.utils.file import validate_file, save_file, compute
-from app.utils.logger import SingletonLogger
-from app.dependencies.constants import (
+from dependencies.auth_utils import get_current_user
+from models.database import get_db
+from models.file import FileModel
+from utils.file import validate_file, save_file, compute
+from utils.logger import SingletonLogger
+from dependencies.constants import (
     HTTP_STATUS_BAD_REQUEST,
     HTTP_STATUS_NOT_FOUND,
 )

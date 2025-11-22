@@ -6,10 +6,10 @@ Includes user and task management endpoints.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.database import get_db
-from app.models.user import UserModel
-from app.models.tasks import Task
-from app.dependencies.auth_utils import admin_required
+from models.database import get_db
+from models.user import UserModel
+from models.tasks import Task
+from dependencies.auth_utils import admin_required
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
