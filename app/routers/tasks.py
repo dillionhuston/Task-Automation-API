@@ -7,15 +7,15 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from ..models.tasks import Task
-from ..schemas.tasks import TaskCreate, TaskResponse
-from ..dependencies.auth_utils import get_current_user
-from ..models.database import get_db
-from ..utils.task import schedule_task
-from ..utils.logger import SingletonLogger
-from ..models.user import UserModel
-from ..dependencies.constants import TASK_STATUS_CANCELLED, HTTP_STATUS_BAD_REQUEST
-from ..tasks.tasks import celery_app
+from app.models.tasks import Task
+from app.schemas.tasks import TaskCreate, TaskResponse
+from app.dependencies.auth_utils import get_current_user
+from app.models.database import get_db
+from app.utils.task import schedule_task
+from app.utils.logger import SingletonLogger
+from app.models.user import UserModel
+from app.dependencies.constants import TASK_STATUS_CANCELLED, HTTP_STATUS_BAD_REQUEST
+from app.tasks.tasks import celery_app
 
 router = APIRouter()
 logger = SingletonLogger().get_logger()
