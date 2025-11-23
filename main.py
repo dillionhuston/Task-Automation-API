@@ -1,10 +1,10 @@
 import threading
 import requests
 import time
-
+import sys
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-
+from pathlib import Path
 from app.routers.auth import router as auth_router
 from app.routers.files import router as file_router
 from app.routers.tasks import router as task_router
@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 Base.metadata.create_all(bind=engine)
+sys.path.append(str(Path(__file__).parent))  # This makes the project root importable
 
 app = FastAPI()
 
