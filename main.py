@@ -5,7 +5,7 @@ import time
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from app.routers.auth import router as auth_router
+from routers.auth import router as auth_router
 from app.routers.files import router as file_router
 from app.routers.tasks import router as task_router
 from app.routers.admin import router as admin_router

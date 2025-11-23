@@ -2,9 +2,9 @@
 
 from fastapi import HTTPException
 import jwt
-from app.auth import SECRET_KEY, pbkdf2_sha256
-from app.dependencies.constants import HTTP_STATUS_UNAUTHORIZED
-from app.utils.logger import SingletonLogger
+from ..auth import SECRET_KEY, pbkdf2_sha256
+from ..dependencies.constants import HTTP_STATUS_UNAUTHORIZED
+from ..utils.logger import SingletonLogger
 logger = SingletonLogger().get_logger()
 def hash_password(password: str) -> str:
     """Hash a password using pbkdf2_sha256.

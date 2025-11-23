@@ -3,7 +3,7 @@
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Integer
 
-from app.dependencies.constants import TASK_STATUS_SCHEDULED, taskscheduledefault
+from ..dependencies.constants import TASK_STATUS_SCHEDULED, taskscheduledefault
 from .database import Base
 
 

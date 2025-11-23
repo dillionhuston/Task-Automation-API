@@ -4,7 +4,7 @@
 import uuid
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import relationship
-from app.models.database import Base
+from ..models.database import Base
 
 class UserModel(Base):
     """User model for user accounts"""
