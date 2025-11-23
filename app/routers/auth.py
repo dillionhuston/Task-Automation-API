@@ -11,7 +11,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from ..models.user import UserModel
-from schemas.user import User, UserCreate
+from ..schemas.user import User, UserCreate
 from ..models.database import get_db
 from ..auth.auth import hash_password, verify_password, jwt_generate
 from ..dependencies.constants import HTTP_STATUS_UNAUTHORIZED
