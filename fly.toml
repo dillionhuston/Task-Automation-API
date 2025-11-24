@@ -8,19 +8,13 @@ primary_region = "lhr"
   PORT = "8000"
 
 [processes]
-  app = "uvicorn main:app --host 0.0.0.0 --port 8000"  
+  app = "uvicorn main:app --host 0.0.0.0 --port 8000"
   worker = "celery -A app.celery_app worker --loglevel=info"
-[http_service]
-  internal_port = 8000
-  force_https = true
-  auto_stop_machines = false
-  auto_start_machines = true
-  min_machines_running = 1
-  processes = ["app", "worker"]
 
 [[services]]
   internal_port = 8000
   protocol = "tcp"
+  process = "app"
 
   [[services.ports]]
     handlers = ["http"]
@@ -29,3 +23,8 @@ primary_region = "lhr"
   [[services.ports]]
     handlers = ["tls", "http"]
     port = 443
+
+[[services]]
+  internal_port = 8000
+  protocol = "tcp"
+  process = "worker"
