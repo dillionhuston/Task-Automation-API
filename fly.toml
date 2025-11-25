@@ -6,9 +6,13 @@ primary_region = "lhr"
 
 [env]
   PORT = "8000"
+  REDIS_URL = "redis://default:a140723b436f44448fe7302f624d3ff6@fly-task-automation-redis.upstash.io:6379"
+  CELERY_BROKER_URL = "redis://default:a140723b436f44448fe7302f624d3ff6@fly-task-automation-redis.upstash.io:6379"
+  CELERY_RESULT_BACKEND = "redis://default:a140723b436f44448fe7302f624d3ff6@fly-task-automation-redis.upstash.io:6379"
 
 [processes]
-  app = "uvicorn main:app --host 0.0.0.0 --port 8000"  
+  app = "uvicorn main:app --host 0.0.0.0 --port 8000"
+  worker = "celery -A app.utils.celery_instance.celery_app worker --loglevel=info"
 
 [http_service]
   internal_port = 8000
@@ -19,8 +23,9 @@ primary_region = "lhr"
   processes = ["app"]
 
 [[services]]
-  internal_port = 8000
-  protocol = "tcp"
+internal_port = 8000
+protocol = "tcp"
+processes = ["app"]
 
   [[services.ports]]
     handlers = ["http"]
@@ -29,3 +34,8 @@ primary_region = "lhr"
   [[services.ports]]
     handlers = ["tls", "http"]
     port = 443
+
+[[services]]
+internal_port = 8000
+protocol = "tcp"
+processes = ["worker"]
