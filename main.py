@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 Base.metadata.create_all(bind=engine)
-sys.path.append(str(Path(__file__).parent))  # This makes the project root importable
+sys.path.append(str(Path(__file__).parent))  
 
 app = FastAPI()
 

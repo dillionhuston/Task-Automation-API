@@ -7,6 +7,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 from celery import shared_task
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 import requests
 
 from app.models.tasks import Task, TaskHistory
@@ -20,10 +21,11 @@ from app.dependencies.constants import (
     TASK_STATUS_FAILED,
     FILE_STORAGE_DIR,
 )
+from app.utils.discord import send_discord_notification
 
 logger = SingletonLogger().get_logger()
 
-
+load_dotenv()
 def log_task_history(db: Session, task_type: str, status: str, details: str):
     history = TaskHistory(task_type=task_type, status=status, details=details)
     db.add(history)
@@ -62,10 +64,13 @@ def file_cleanup(task_id: int, receiver_email: Optional[str] = None) -> None:
             # Mark task completed
             task.status = TASK_STATUS_COMPLETED
             db.commit()
+            
+
 
             details_msg = f"Deleted {deleted_count} files"
             if receiver_email:
                 send_completion_email(task_id, receiver_email)
+                send_discord_notification()
                 logger.info(f"Sent task completion email to {receiver_email}")
                 details_msg += f", email sent to {receiver_email}"
             else:
@@ -118,6 +123,12 @@ def send_reminder(task_id: int, receiver_email: str) -> None:
 
             # Send email reminder
             send_completion_email(task_id, receiver_email)
+            send_discord_notification(
+                    status=task.status,
+                    task_name=task.title,
+                    webhook_url=os.getenv("WEBHOOK_URL"),
+                    message="Reminder sent"
+                   )
             logger.info(f"Sent reminder email to {receiver_email}")
 
             task.status = TASK_STATUS_COMPLETED
