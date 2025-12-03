@@ -33,7 +33,8 @@ def schedule_task_endpoint(
             db=db,
             user_id=str(user.id),
             task_data=task,
-            receiver_email=task.receiver_email
+            receiver_email=task.receiver_email,
+            webhook_url=task.webhook_url
         )
         return new_task
     except Exception as e:

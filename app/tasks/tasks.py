@@ -1,5 +1,10 @@
 """
 Celery tasks for handling scheduled jobs such as file cleanup and sending reminders.
+
+
+This whole file just needs fixed. Code everywhere. 
+
+Need to find a way to implement dicord notification safely 
 """
 
 import os
@@ -123,12 +128,8 @@ def send_reminder(task_id: int, receiver_email: str) -> None:
 
             # Send email reminder
             send_completion_email(task_id, receiver_email)
-            send_discord_notification(
-                    status=task.status,
-                    task_name=task.title,
-                    webhook_url=os.getenv("WEBHOOK_URL"),
-                    message="Reminder sent"
-                   )
+
+            #this is where we send the notification, but it should not just send this. I need to add better information
             logger.info(f"Sent reminder email to {receiver_email}")
 
             task.status = TASK_STATUS_COMPLETED

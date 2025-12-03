@@ -5,6 +5,7 @@ Schemas for task-related data models and validation.
 from datetime import datetime, timezone
 from enum import Enum
 from pydantic import BaseModel, field_validator
+from typing import Optional
 
 
 def aware_utcnow() -> datetime:
@@ -33,6 +34,7 @@ class TaskCreate(BaseModel):
     schedule_time: datetime
     title: str
     receiver_email: str
+    webhook_url: Optional[str]=None
 
     @field_validator("schedule_time")
     @classmethod

@@ -8,14 +8,14 @@ from app.models.tasks import Task
 from app.schemas.tasks import TaskCreate, TaskStatus, TaskResponse
 from app.utils.celery_instance import celery_app
 from app.utils.logger import SingletonLogger
-from app.dependencies.constants import TASK_TYPE_REMINDER, TASK_TYPE_FILE_CLEANUP
+from app.dependencies.constants import TASK_TYPE_REMINDER, TASK_TYPE_FILE_CLEANUP, TASK_STATUS_SCHEDULED
 from app.tasks.tasks import celery_app
-
+from app.utils.discord import send_discord_notification
 logger = SingletonLogger().get_logger()
 
 
 def schedule_task(
-    db: Session, user_id: str, task_data: TaskCreate, receiver_email: str
+    db: Session, user_id: str, task_data: TaskCreate, receiver_email: str, webhook_url: str
 ) -> TaskResponse:
     """
     Schedule a new task in the database and (if reminder) send via Celery.
@@ -51,6 +51,12 @@ def schedule_task(
         new_task.schedule_time,
         new_task.receiver_email,
     )
+    send_discord_notification(
+        webhook_url=task_data.webhook_url, 
+        status=TASK_STATUS_SCHEDULED,
+        task_name=task_data.title,
+        message=f"Task :{task_data.title} ID:{new_task.id} Scheduled for {new_task.schedule_time}"
+        )
 
     if task_data.task_type == TASK_TYPE_REMINDER:
         celery_app.send_task(

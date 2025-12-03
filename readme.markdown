@@ -7,17 +7,18 @@
 
 ---
 ## Description
-**Task Automation API is a backend service I built to automate repetitive tasks like file cleanup and email reminders. Using FastAPI, Celery, SQLAlchemy, and Redis, it supports secure JWT-based authentication and reliable background task execution. Tasks can be scheduled, listed, and canceled via a CLI client or API endpoints. I focused on modular architecture, strong typing, and production-ready logging. Notifications are sent automatically, demonstrating my ability to build complex backend systems that solve real-world problems.””**
+**Task Automation API is a backend service I built to automate repetitive tasks like file cleanup and email reminders. Using FastAPI, Celery, SQLAlchemy, and Redis, it supports secure JWT-based authentication and reliable background task execution. Tasks can be scheduled, listed, and canceled via a CLI client or API endpoints. I focused on modular architecture, strong typing, and production ready logging. Notifications are sent automatically, demonstrating my ability to build backend systems that solve real world problems.””**
 
 ##  Features
 
-- **File Cleanup Tasks** — Automatically delete old files from specified directories  
-- **Email Reminders** — Schedule and send email notifications at precise times  
+- **File Cleanup Tasks** — Automatically delete old files from specified directories(**Locally**)
+- **Email Reminders** — Schedule and send email notifications at precise times 
 - **JWT-based Authentication** — Secure `register` and `login` endpoints  
 - **Modular Architecture** — Clean separation: routers, services, tasks, utils  
-- **Thread-Safe Singleton Logger** — Lazy formatting, production-ready logging  
+- **Thread-Safe Singleton Logger** — Lazy formatting, production-ready logging
 - **Strong Typing & Validation** — Full Pydantic schema enforcement  
-- **CLI Client** — Interact with the API directly from the terminal  
+- **CLI Client** — Interact with the API directly from the terminal
+- **Webhook Support** - Provide your own webhook url, to receive task updates
 - **100% PEP8 Compliant** — Linted, formatted, and ready for production  
 
 ---
@@ -104,16 +105,20 @@ Task-Automation-API/
 │   ├── models/          # SQLAlchemy models
 │   ├── routers/         # FastAPI routes
 │   ├── schemas/         # Pydantic schemas
+|   ├── scripts/         # Admin client script
 │   ├── tasks/           # Celery task definitions
 │   └── utils/           # Logger, email, helpers
-├── uploads/             # Target folder for cleanup
+|   └── config.py           # Config file
 ├── main.py              # FastAPI entry point
 ├── worker.py            # Celery worker launcher
+├── initdb.py            # Create Database 
+
 ├── .env                 # Environment variables
 ├── requirements.txt     # Python dependencies
 ├── Dockerfile           # Docker build file
 ├── docker-compose.yml   # Docker Compose setup
-└── dev.db               # SQLite development DB
+└── dev.db               # SQLite development DB, postgree avaliabble for prod
+               
 
 
 ## Production Deployment with Docker Compose
