@@ -34,7 +34,7 @@ class TaskCreate(BaseModel):
     schedule_time: datetime
     title: str
     receiver_email: str
-    webhook_url: Optional[str]
+    webhook_url: Optional[str] = None
 
     @field_validator("schedule_time")
     @classmethod
