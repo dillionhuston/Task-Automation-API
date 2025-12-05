@@ -21,6 +21,6 @@ def send_discord_notification(
         if response.status_code == 204: # return 204 on success
             return content
         else:
-            logger.log(f"Discord message failed to send {response.text}. app.utils.discord ")
+            logger.log(msg=f"Discord message failed to send {response.text}. app.utils.discord ")
     except Exception as e:
-        logger.log(f"Error sending Discord message{e}")
+        logger.log(msg=f"Error sending Discord message{e}", level=1)

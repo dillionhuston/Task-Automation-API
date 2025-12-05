@@ -8,18 +8,20 @@ Need to find a way to implement dicord notification safely
 """
 
 import os
-from typing import Optional
+import datetime
+import requests
+
 from datetime import datetime, timedelta
 from celery import shared_task
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-import requests
 
 from app.models.tasks import Task, TaskHistory
 from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal
 from app.utils.email import send_completion_email
 from app.utils.logger import SingletonLogger
+from typing import Optional
 from app.dependencies.constants import (
     TASK_STATUS_RUNNING,
     TASK_STATUS_COMPLETED,
@@ -31,13 +33,27 @@ from app.utils.discord import send_discord_notification
 logger = SingletonLogger().get_logger()
 
 load_dotenv()
-def log_task_history(db: Session, task_type: str, status: str, details: str):
-    history = TaskHistory(task_type=task_type, status=status, details=details)
+def log_task_history(
+        db: Session,
+        task_type: str,
+        status: str,
+        details: str,
+        user_id: str,
+        executed_time:str
+):
+    history = TaskHistory(
+        task_type=task_type,
+        status=status,
+        details=details,
+        user_id=user_id,
+        executed_time=executed_time)
+    
     db.add(history)
     db.commit()
 
+
 @celery_app.task(name="app.tasks.tasks.file_cleanup")
-def file_cleanup(task_id: int, receiver_email: Optional[str] = None) -> None:
+def file_cleanup(task_id: int, receiver_email: Optional[str])-> None:
     """
     Delete files older than 1 day and update task status.
     """
@@ -93,7 +109,7 @@ def file_cleanup(task_id: int, receiver_email: Optional[str] = None) -> None:
                     task.status = TASK_STATUS_FAILED
                     db.merge(task)
                     db.commit()
-                    log_task_history(db, task_type="file_cleanup", status="FAILED", details=str(e))
+                    log_task_history(db, task_type="file_cleanup", status="FAILED", details=str(e), user_id=task.user_id)
             except Exception as db_error:
                 logger.error(f"Failed to update task status after failure: {db_error}")
 
@@ -136,9 +152,10 @@ def send_reminder(task_id: int, receiver_email: str) -> None:
             db.commit()
             log_task_history(
                 db,
-                task_type="send_reminder",
-                status="COMPLETED",
-                details=f"Reminder email sent to {receiver_email}"
+                task_type="Send Reminder",
+                status=task.status,
+                details=f"Reminder email sent to {receiver_email}",
+                user_id=task.user_id
             )
 
     except Exception as e:
@@ -153,7 +170,9 @@ def send_reminder(task_id: int, receiver_email: str) -> None:
                         db,
                         task_type="send_reminder",
                         status="FAILED",
-                        details=str(e)
+                        details=str(e),
+                        user_id=task.user_id, 
+                        executed_time=datetime.now()
                     )
             except Exception as db_error:
                 logger.error(f"Failed to update task status after reminder failure: {db_error}")

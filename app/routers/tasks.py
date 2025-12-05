@@ -9,8 +9,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
-from app.models.tasks import Task
-from app.schemas.tasks import TaskCreate, TaskResponse
+from app.models.tasks import Task, TaskHistory
+from app.schemas.tasks import TaskCreate, TaskResponse, TaskHistoryS
 from app.dependencies.auth_utils import get_current_user
 from app.models.database import get_db
 from app.utils.task import schedule_task
@@ -112,3 +112,14 @@ async def delete_task_endpoint(
 
     logger.info("Task %s permanently deleted by user %s", task_id, user.id)
     return TaskResponse.model_validate(task)
+
+
+@router.get("/task_history", response_model=List[TaskHistoryS])
+async def task_History(
+    db: Session = Depends(get_db),
+    user: UserModel = Depends(get_current_user)
+):
+    history = db.query(TaskHistory).filter(TaskHistory.user_id == str(user.id)).order_by(TaskHistory.executed_at.desc()).all()
+    
+    return [TaskHistoryS.model_validate(task) for task in history]
+

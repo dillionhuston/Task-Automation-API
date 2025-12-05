@@ -63,4 +63,14 @@ class TaskResponse(BaseModel):
     }
 
 
+class TaskHistoryS(BaseModel):
+    task_type: str
+    status: str
+    details: str
+    user_id: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
 __all__ = ["TaskStatus", "TaskType", "TaskCreate", "TaskResponse"]
