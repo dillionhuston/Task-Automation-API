@@ -1,33 +1,41 @@
 # Task Automation API
+![Banner](assets/home.png)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/dillionhuston/Task-Automation-API/ci.yml)](https://github.com/dillionhuston/Task-Automation-API/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
 
-**A powerful, modular backend service for scheduling and executing automated tasks** — including **file cleanup** and **email reminders** — built with **FastAPI**, **Celery**, **SQLAlchemy**, and **Redis**.
-
+**A production-ready, modular backend service for scheduling and automating recurring tasks** — including **automatic file cleanup**, **email reminders**, and **task history tracking**.
 ---
-## Description
-**Task Automation API is a backend service I built to automate repetitive tasks like file cleanup and email reminders. Using FastAPI, Celery, SQLAlchemy, and Redis, it supports secure JWT-based authentication and reliable background task execution. Tasks can be scheduled, listed, and canceled via a CLI client or API endpoints. I focused on modular architecture, strong typing, and production ready logging. Notifications are sent automatically, demonstrating my ability to build backend systems that solve real world problems.””**
+
+Built with **FastAPI**, **Celery**, **Redis**, and **SQLAlchemy**, featuring secure JWT authentication, background task processing, and webhook notifications.
+
 
 ##  Features
 
-- **File Cleanup Tasks** — Automatically delete old files from specified directories(**Locally**)
-- **Email Reminders** — Schedule and send email notifications at precise times 
-- **JWT-based Authentication** — Secure `register` and `login` endpoints  
-- **Modular Architecture** — Clean separation: routers, services, tasks, utils  
-- **Thread-Safe Singleton Logger** — Lazy formatting, production-ready logging
-- **Strong Typing & Validation** — Full Pydantic schema enforcement  
-- **CLI Client** — Interact with the API directly from the terminal
-- **Webhook Support** - Provide your own webhook url, to receive task updates
-- **100% PEP8 Compliant** — Linted, formatted, and ready for production  
+- **Automated File Cleanup** – Delete old files from local directories on a schedule(locally)
+- **Email Reminders** – Send timed email notifications with full content customization  
+- **Secure Authentication** – JWT-based login/register with protected routes  
+- **Background Task Execution** – Powered by Celery + Redis for reliable scheduling  
+- **Webhook Notifications** – Get real-time updates when tasks complete or fail  
+- **Rich CLI Client** – Full-featured terminal interface for task management  
+- **Task History & Cancellation** – List, monitor, and cancel scheduled tasks  
+![Task List & History](assets/tasks.png)
+- **Modular & Type-Safe** – Clean architecture with Pydantic validation and full typing  
+- **Production-Ready Logging** – Thread-safe singleton logger with structured output  
+- **Docker Compose Deployment** – One-command full-stack deployment  
+- **100% PEP8 Compliant** – Formatted with Ruff/Black, tested and linted
 
 ---
+![Email reminder dmemo](assets/addtask.png)
 
-##  Quickstart
+
+
+##  Quickstart (Dev)
 ```bash
 git clone https://github.com/dillionhuston/Task-Automation-API.git
 cd Task-Automation-API
-python -m venv .venv
+
+python -m venv venv ** source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -36,7 +44,7 @@ pip install -r requirements.txt
 # Terminal 1: Start Redis
 redis-server
 
-# Terminal 2: Launch FastAPI
+# Terminal 2: Launch FastAPI (with auto reload)
 uvicorn main:app --reload
 
 # Terminal 3: Start Celery Worker
@@ -46,56 +54,78 @@ celery -A worker worker --pool=solo --loglevel=info
 python -m app.CLIENT.client_poll_server
 ```
 
-# CLI client is located at `app/CLIENT/client.py`
-```bash
+
+## Using the CLI Client
+## CLI client is located at `app/CLIENT/client.py`
+
 # 1. Signup
 python app/CLIENT/client.py signup --email john@example.com --password pass12334 --username john
 
 # 2. Login
 python app/CLIENT/client.py login --email john@example.com --password pass12334
 
-# 3. Create File Cleanup Task (deletes files >7 days old in folder defined in constants.py
+# 3. Create File Cleanup Task
 python app/CLIENT/client.py create_task \
   --task_type file_cleanup \
   --schedule_time "Oct 27 1:04pm" \
   --title "Clean uploads/"
 
-# 4. Create Reminder Task
+# 4. Schedule an Email Reminder
 python app/CLIENT/client.py create_task \
   --task_type reminder \
   --schedule_time "Oct 28 7pm" \
   --receiver_email "john@example.com" \
   --title "Team Standup"
 
-```
+![reminde demo](assets/example_task.png)
+
+
 ---
 
-## API Usage
-Visit Swagger UI: http://localhost:8000/docs
-1. **Register**: `POST /register`
-2. **Login**: `POST /login` (receive Bearer token)
-3. **Schedule a task**: `POST /schedule`
-```json
-{
-  "task_type": "file_cleanup" | "reminder",
-  "schedule_time": "2025-08-10T14:00:00Z",
-  "receiver_email": "user@example.com"  # Required for reminders
-}
-```
-4. **List scheduled tasks**: `GET /list_tasks`
-5. **Cancel a task**: `GET /cancel/{task_id}`
+# API Endpoints (Swagger UI)
+## Once running: http://localhost:8000/docs
 
-## Email Reminders Setup
+| Method   | Endpoint              | Description                  |
+|----------|-----------------------|------------------------------|
+| `POST`   | `/register`           | Create a new user account    |
+| `POST`   | `/login`              | Authenticate and get JWT token |
+| `POST`   | `/schedule`           | Schedule a new task          |
+| `GET`    | `/list_tasks`         | View all scheduled tasks     |
+| `DELETE` | `/cancel/{task_id}`   | Cancel a pending task        |
+| 'GET'    | '/tasks/task_history' | Gets task history of user    |
+
+
+
+## Email Setup (.env)
 Create a `.env` file with your Gmail credentials:
 
 ```bash
 EMAIL=your_email@gmail.com
 PASSWORD=your_app_password
-
-**Note:** Enable 2FA and create an app password for secure email sending.  
-You can also refer to the included `.env_example` file for a template of all required environment variables.
+REDIS_URL=redis://localhost:6379/0
+DATABASE_URL=sqlite:///./dev.db
+JWT_SECRET=your-super-secret-jwt-key-here
 ```
+
+**Gmail Users:** Enable 2FA and create an **App Password** for secure email sending.  
+You can also refer to the included `.env_example` file for a template of all required environment variables.
+
+
+# Production deployment (Docker Compose)
+
+```bash 
+docker compose up --build
+docker-compose up
+```
+**Make sure to have docker or docker desktop installed on your system**
+
+This starts:
+- FastAPI(port 8000)
+- Celery Worker
+- Redis
+- Postgre-SQL ready config, Just switch DATABASE_URL. In .env
 ## Project Structure
+
 ```bash
 Task-Automation-API/
 ├── app/
@@ -108,46 +138,31 @@ Task-Automation-API/
 |   ├── scripts/         # Admin client script
 │   ├── tasks/           # Celery task definitions
 │   └── utils/           # Logger, email, helpers
-|   └── config.py           # Config file
+|   └── config.py        # Config file
 ├── main.py              # FastAPI entry point
 ├── worker.py            # Celery worker launcher
+├── Dockerfile           # Multi-stage production image         
 ├── initdb.py            # Create Database 
 
 ├── .env                 # Environment variables
 ├── requirements.txt     # Python dependencies
 ├── Dockerfile           # Docker build file
 ├── docker-compose.yml   # Docker Compose setup
-└── dev.db               # SQLite development DB, postgree avaliabble for prod
-               
+└── dev.db               # SQLite development DB, PostgreSQL available for prod
+  ```
+# Contributing
 
-
-## Production Deployment with Docker Compose
-Deploy the full stack (FastAPI + Celery + Redis) using Docker Compose.
-- Always make sure docker is running
-## Run 
-```bash
-docker-compose up --build -d
-```
-
-## Contributing
-
-We welcome contributions! You can help by **reporting bugs**, **suggesting features**, or **submitting pull requests**.  
+## Contributions are very welcome! Here's how:
 
 ### How to Contribute
 
 1. **Fork** the repository.  
-2. **Create a branch** for your feature or bugfix:  
-   ```bash
-   git checkout -b feature/my-feature
-    ```
-3. Make your changes and commit with a clear message:
-   ```bash
-      git commit -m "Add feature X"
-   ```
-4.Push your branch to your fork:
-```bash
-git push origin feature/my-feature
-```
+
+2. **Create a branch** for your feature or bugfix:  ``` git checkout -b feature/my-feature```
+
+3. Make your changes and commit with a clear message:```git commit -m "Add feature X"```
+
+4. Push your branch to your fork: ```git push origin feature/my-feature```
 
 ##  License
 MIT License
