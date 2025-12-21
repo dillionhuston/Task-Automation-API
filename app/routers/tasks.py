@@ -4,9 +4,11 @@ Includes scheduling, listing, cancelling, and deleting tasks.
 Fully compatible with UUID task IDs and your current auth system.
 """
 
+from typing import Optional
+
 from uuid import UUID
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Form, Depends, HTTPException, Path, File, UploadFile
 from sqlalchemy.orm import Session
 
 from app.models.tasks import Task, TaskHistory
@@ -18,25 +20,49 @@ from app.utils.logger import SingletonLogger
 from app.models.user import UserModel
 from app.dependencies.constants import HTTP_STATUS_BAD_REQUEST
 
+from app.schemas.tasks import TaskType
+from datetime import datetime
+
 router = APIRouter(prefix="/tasks")
 logger = SingletonLogger().get_logger()
 
 
 @router.post("/schedule", response_model=TaskResponse)
-def schedule_task_endpoint(
-    task: TaskCreate,
+# sorry this is probaly the only way we can add a file as optional. I cant use a schema to combine them both
+async def schedule_task_endpoint(
+    title: str = Form(...),
+    description: str = Form(...),
+    receiver_email: str = Form(...),
+    task_type: TaskType = Form(...),
+    schedule_time: datetime = Form(...),
+    webhook_url: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     user: UserModel = Depends(get_current_user)
 ):
     try:
-        new_task = schedule_task(
+        task_data = TaskCreate(
+            title=title,
+            description=description,
+            receiver_email=receiver_email,
+            task_type=task_type,
+            schedule_time=schedule_time,
+            webhook_url=webhook_url
+        )
+
+       
+        # Schedule the task (file is optional)
+        new_task = await schedule_task(
             db=db,
             user_id=str(user.id),
-            task_data=task,
-            receiver_email=task.receiver_email,
-            webhook_url=task.webhook_url
+            task_data=task_data,
+            receiver_email=receiver_email,
+            webhook_url=webhook_url,
+            file=file
         )
+
         return new_task
+
     except Exception as e:
         logger.exception("Error scheduling task: %s", e)
         raise HTTPException(
@@ -50,9 +76,28 @@ def list_tasks_endpoint(
     db: Session = Depends(get_db),
     user: UserModel = Depends(get_current_user)
 ):
-    tasks = db.query(Task).filter(Task.user_id == str(user.id)).all()
-    return [TaskResponse.model_validate(task) for task in tasks]
+    try:
+        tasks = db.query(TaskHistory).filter(TaskHistory.user_id == str(user.id)).all()
+        task_history = []
+        for task in tasks:  #
+            task_history.append({
+                "id": str(task.id),
+                "schedule_time": task.executed_at,
+                "status": task.status,
+                "task_type": task.task_type,
+                "details": task.details,
+                "user_id": task.user_id,
+                "executed_at": task.executed_at
+            })
 
+        return task_history
+            
+    except Exception as exc:
+        logger.error("Error querying tasks for user %s: %s", user.id, str(exc))
+        raise HTTPException(
+            status_code=HTTP_STATUS_BAD_REQUEST,
+            detail="Error retrieving tasks"
+        ) from exc
 
 def validate_uuid(task_id: str) -> UUID:
     try:

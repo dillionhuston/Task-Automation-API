@@ -15,3 +15,4 @@ class FileModel(Base):
     file_path = Column(String)
     file_hash = Column(String)
     user = relationship("UserModel", back_populates="files")
+    nonce = Column(String, nullable=False)

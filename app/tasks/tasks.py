@@ -4,12 +4,11 @@ Celery tasks for handling scheduled jobs such as file cleanup and sending remind
 
 This whole file just needs fixed. Code everywhere. 
 
-Need to find a way to implement dicord notification safely 
+Yes i know its shit
+
 """
 
 import os
-import datetime
-import requests
 
 from datetime import datetime, timedelta
 from celery import shared_task
@@ -21,6 +20,7 @@ from app.utils.celery_instance import celery_app
 from app.models.database import SessionLocal
 from app.utils.email import send_completion_email
 from app.utils.logger import SingletonLogger
+from app.models.file import FileModel
 from typing import Optional
 from app.dependencies.constants import (
     TASK_STATUS_RUNNING,
@@ -46,7 +46,7 @@ def log_task_history(
         status=status,
         details=details,
         user_id=user_id,
-        executed_time=executed_time)
+        executed_at=executed_time)
     
     db.add(history)
     db.commit()
@@ -64,9 +64,9 @@ def file_cleanup(task_id: int, receiver_email: Optional[str])-> None:
             task = db.query(Task).filter(Task.id == task_id).first()
 
             if not task:
+                task.sc
                 logger.warning(f"No task found with ID {task_id}")
                 return
-
             # Mark task as running
             task.status = TASK_STATUS_RUNNING
             db.commit()
@@ -117,19 +117,30 @@ def file_cleanup(task_id: int, receiver_email: Optional[str])-> None:
 
 
 @celery_app.task(name="app.tasks.tasks.send_reminder")
-def send_reminder(task_id: int, receiver_email: str) -> None:
+def send_reminder(
+    task_id: int,
+    receiver_email: str,
+    file_id: int
+    ) -> None:
+
     """
     Send reminder email for a scheduled task.
     """
     task: Optional[Task] = None
+    file: Optional[FileModel] = None
+    
 
     try:
         with SessionLocal() as db:
             task = db.query(Task).filter(Task.id == task_id).first()
+            file = db.query(FileModel).filter(FileModel.id == file_id).first()
 
-            if not task:
-                logger.warning(f"No task found with ID {task_id}")
+            if not task or file:
+                logger.warning(f"No task/file found with ID {task_id} and or {file_id}")
+                #either way a task can be created without a file or it saving garbage
+                file = None
                 return
+            
 
             task.status = TASK_STATUS_RUNNING
             db.commit()
@@ -142,20 +153,20 @@ def send_reminder(task_id: int, receiver_email: str) -> None:
             else:
                 logger.warning("Task has no schedule_time set.")
 
-            # Send email reminder
-            send_completion_email(task_id, receiver_email)
+            
+            send_completion_email(task_id, receiver_email,file_id)
 
             #this is where we send the notification, but it should not just send this. I need to add better information
             logger.info(f"Sent reminder email to {receiver_email}")
 
-            task.status = TASK_STATUS_COMPLETED
             db.commit()
             log_task_history(
                 db,
                 task_type="Send Reminder",
                 status=task.status,
                 details=f"Reminder email sent to {receiver_email}",
-                user_id=task.user_id
+                user_id=task.user_id,
+                executed_time=reminder_time
             )
 
     except Exception as e:

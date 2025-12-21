@@ -28,6 +28,20 @@ class TaskType(str, Enum):
     FILE_CLEANUP = "file_cleanup"
 
 
+class FileTypes(str, Enum):
+
+    """gonna have to get a libary to mkae this more easier.
+       rather than typing out the every file type
+    """
+    PNG = ".png"
+    JPED = ".jpeg"
+    MP3 = ".mp3"
+    MP4 = ".mp4"
+    TXT = ".txt"
+
+
+
+
 class TaskCreate(BaseModel):
     """Schema for creating a task."""
     task_type: TaskType
@@ -35,6 +49,9 @@ class TaskCreate(BaseModel):
     title: str
     receiver_email: str
     webhook_url: Optional[str] = None
+
+
+
 
     @field_validator("schedule_time")
     @classmethod
@@ -55,8 +72,8 @@ class TaskResponse(BaseModel):
     task_type: str
     schedule_time: datetime
     status: str
-    title: str
-    receiver_email: str
+    title: Optional[str] = None  
+    receiver_email: Optional[str] = None 
 
     model_config = {
         "from_attributes": True

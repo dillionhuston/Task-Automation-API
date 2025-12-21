@@ -1,9 +1,8 @@
 """SQLAlchemy models for Task Automation API: Task and TaskHistory."""
-import uuid
 from sqlalchemy import ForeignKey
 
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Integer, UUID
+from sqlalchemy import Column, String, DateTime, Integer
 from ..dependencies.constants import TASK_STATUS_SCHEDULED, taskscheduledefault
 from .database import Base
 
@@ -18,6 +17,7 @@ class Task(Base):  # pylint: disable=too-few-public-methods
     status = Column(String, default=TASK_STATUS_SCHEDULED)
     title = Column(String, default="")
     receiver_email = Column(String, default="")
+    file_id = Column(String, nullable=True) # added this for users uploading files with task scheduling
 
 
 class TaskHistory(Base):  # pylint: disable=too-few-public-methods

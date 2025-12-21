@@ -17,10 +17,12 @@ from app.auth.auth import hash_password, verify_password, jwt_generate
 from app.dependencies.constants import HTTP_STATUS_UNAUTHORIZED
 from app.utils.logger import SingletonLogger
 
+from app.Encryption_Services.keyGenerator import KeyHandler
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 logger = SingletonLogger().get_logger()
-
+handler = KeyHandler()
 
 @router.post("/register", response_model=User)
 async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
@@ -45,11 +47,12 @@ async def register(user: UserCreate, db: Session = Depends(get_db)) -> User:
         username=user.username,
         email=user.email,
         hashed_password=hash_password(user.password),
-        is_admin=user.is_admin
+        is_admin=user.is_admin,
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    handler.createKey(db_user.id, db)
     return db_user
 
 

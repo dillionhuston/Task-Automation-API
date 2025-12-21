@@ -1,5 +1,4 @@
 """Authentication module for JWT token creation and verification."""
-import os
 
 import jwt
 from dotenv import load_dotenv

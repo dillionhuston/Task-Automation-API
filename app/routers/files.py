@@ -3,119 +3,103 @@ File management endpoints for Task Automation API.
 Includes upload, list, and delete functionality.
 """
 
-import os
-from uuid import uuid4
+
+from io import BytesIO
 from typing import List, Dict, Any
 
-from fastapi import APIRouter, UploadFile, Depends, File, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException
 
+from sqlalchemy.orm import Session
 from app.dependencies.auth_utils import get_current_user
 from app.models.database import get_db
+from app.models.user import UserModel
 from app.models.file import FileModel
-from app.utils.file import validate_file, save_file, compute
+
+from app.Encryption_Services.encryptionService import EncryptionService
+
 from app.utils.logger import SingletonLogger
 from app.dependencies.constants import (
     HTTP_STATUS_BAD_REQUEST,
-    HTTP_STATUS_NOT_FOUND,
 )
 
-router = APIRouter()
+router = APIRouter(prefix="/files", tags=["Files"])
 logger = SingletonLogger().get_logger()
 
-
-@router.post("/upload")
-async def upload_file(
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user)
-) -> Dict[str, Any]:
-    """Upload a file: validate, hash, save to disk, and store metadata."""
-    if not file:
-        logger.exception("Tried to upload file, but nothing provided")
-        raise HTTPException(
-            status_code=HTTP_STATUS_BAD_REQUEST,
-            detail="No file uploaded, or invalid file"
-        )
-
-    validate_file(file)
-    file_hash = compute(file.file)
-    file.file.seek(0)
-    filename, file_path = save_file(file, user.id)
-
-    new_file = FileModel(
-        id=str(uuid4()),
-        user_id=user.id,
-        filename=filename,
-        file_path=file_path,
-        file_hash=file_hash,
-    )
-
-    db.add(new_file)
-    db.commit()
-    db.refresh(new_file)
-    logger.info(
-        "New file upload | user: %s | FILE_ID: %s | path: %s",
-        new_file.user_id, new_file.id, new_file.file_path
-    )
-    return {"message": "File uploaded successfully", "file_id": new_file.id}
 
 
 @router.get("/list")
 def list_files(
     user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-) -> List[Dict[str, Any]]:
+    db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """List files uploaded by the current user."""
     try:
         files = db.query(FileModel).filter(FileModel.user_id == user.id).all()
+        
+        # return empty list if no files found  don't raise an exception
+        if not files:
+            logger.info("No files found for user %s", user.id)
+            return []
+        
         return [
             {
                 "id": f.id,
                 "filename": f.filename,
                 "file_path": f.file_path,
-                "file_hash": f.file_hash,
-            }
+                "file_hash": f.file_hash
+            }  
             for f in files
         ]
     except Exception as exc:
-        logger.error("No files found for user %s", user.id)
+        logger.error("Error querying files for user %s: %s", user.id, str(exc))
         raise HTTPException(
             status_code=HTTP_STATUS_BAD_REQUEST,
-            detail="No files found"
+            detail="Error retrieving files"
         ) from exc
 
 
-@router.delete("/delete/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_file(
+@router.get("/download/{file_id}")
+async def download_file(
     file_id: str,
     db: Session = Depends(get_db),
-    user=Depends(get_current_user)
-) -> None:
-    """Delete a file by ID if it belongs to the user."""
+    user: UserModel = Depends(get_current_user)):
+
+
     file = db.query(FileModel).filter(
-        FileModel.id == file_id, FileModel.user_id == user.id
-    ).first()
+        FileModel.id == file_id).first()
 
     if not file:
-        logger.exception("Could not find File_ID: %s", file_id)
-        raise HTTPException(
-            status_code=HTTP_STATUS_NOT_FOUND,
-            detail=f"File not found with ID: {file_id}"
-        )
+        raise HTTPException(404, "File not found")
 
     try:
-        os.remove(file.file_path)
-        logger.info("Deleted file from disk | ID: %s | user: %s", file.id, file.user_id)
-    except FileNotFoundError:
-        logger.warning("File not found on disk (already deleted?): %s", file.file_path)
-    except Exception as exc:
-        logger.exception("Unexpected error deleting file: %s", file.file_path)
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Could not delete file from disk"
-        ) from exc
+        # convert stored hex nonce to bytes
+        nonce_bytes = bytes.fromhex(file.nonce)
 
-    db.delete(file)
-    db.commit()
-    logger.info("Deleted file record from DB | ID: %s", file_id)
+        decrypted = EncryptionService.decrypt(
+            file_path=file.file_path,
+            user_id=str(user.id),
+            db=db,
+            nonce=nonce_bytes
+        )
+
+        original_filename = file.filename or "downloaded_file"
+
+        # guess correct MIME type
+        import mimetypes
+        media_type, _ = mimetypes.guess_type(original_filename)
+        if media_type is None:
+            media_type = "application/octet-stream"
+
+        return StreamingResponse(
+            BytesIO(decrypted),
+            media_type=media_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{original_filename}"'
+            }
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Download failed for file %s (user %s): %s", file_id, user.id, e)
+        raise HTTPException(status_code=500, detail="Failed to decrypt file")

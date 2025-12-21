@@ -12,5 +12,4 @@ celery_app = Celery(
     backend=redis_url
 )
 
-
-import app.tasks.tasks
+from app.tasks import tasks

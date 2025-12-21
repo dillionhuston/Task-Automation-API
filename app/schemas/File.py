@@ -1,15 +1,14 @@
-"""
-Schemas for file-related data models.
-"""
-
 from pydantic import BaseModel
-
+from typing import Optional
 
 class FileResponse(BaseModel):
-    """Schema for returning file data."""
     id: str
     filename: str
     file_path: str
     file_hash: str
 
-__all__ = ["FileResponse"]
+class FileUploadRequest(BaseModel):
+    filename: str
+    file_hash: Optional[str] = None
+
+__all__ = ["FileResponse", "FileUploadRequest"]
