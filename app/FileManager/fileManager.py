@@ -4,7 +4,7 @@ from app.models.database import get_db
 from app.FileManager.fileOperations import fileOperations
 from app.Encryption_Services.encryptionService import EncryptionService
 from app.FileManager.databaseManager import saveToDatabase
-from app.filehasher.API.HashFile import HashHandler
+from app.FileHasher.API.HashFile import HashHandler
 from app.utils.logger import SingletonLogger
 import os
 
