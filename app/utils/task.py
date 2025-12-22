@@ -16,7 +16,6 @@ from app.utils.discord import send_discord_notification
 from app.FileManager.fileManager import fileManager
 
 
-
 logger = SingletonLogger().get_logger()
 
 
