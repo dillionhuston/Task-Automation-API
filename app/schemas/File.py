@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
+"""Schema for returning files"""
 class FileResponse(BaseModel):
     id: str
     filename: str

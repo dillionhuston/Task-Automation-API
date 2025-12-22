@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
 
 
 class User(BaseModel):
-    """Schema for returning user data."""
+    """Schema for returning user data"""
     id: str
     username: str
     email: str

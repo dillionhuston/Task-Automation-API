@@ -66,7 +66,7 @@ class TaskCreate(BaseModel):
 
 
 class TaskResponse(BaseModel):
-    """Schema for returning task data."""
+    """Schema for returning task data"""
     id: str
     user_id: str
     task_type: str
